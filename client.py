@@ -125,3 +125,12 @@ class Client(object):
         """
 
         return self._send_request('private', 'GET', f"subaccounts")
+
+    def get_private_subaccount_balances(self, name):
+        """
+        https://docs.ftx.com/#get-subaccount-balances
+
+        ::return: a list contains subaccount balances
+        """
+
+        return self._send_request('private', 'GET', f"subaccounts/{name}/balances")
