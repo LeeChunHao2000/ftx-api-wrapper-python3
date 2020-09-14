@@ -696,3 +696,38 @@ class Client(object):
         """
 
         return self._send_request('private', 'POST', f"account/leverage", {'leverage': leverage})
+    
+    def set_private_create_order(self, pair, side, price, _type, size, reduceOnly=False,
+                                 ioc=False, postOnly=False, clientId=None):
+        """
+        https://docs.ftx.com/?python#place-order
+
+        :param pair: the trading pair to query. e.g. "BTC/USD" for spot, "XRP-PERP" for futures
+        :param side: the trading side, should only be buy or sell
+        :param price: the order price, Send null for market orders.
+        :param _type: type of order, should only be limit or market
+        :param size:  the amount of the order for the trading pair
+        :param reduceOnly: only reduce position, default is false
+        :param ioc: immediate or cancel order, default is false
+        :param postOnly: always maker, default is false
+        :param clientId: client order id
+        :return: a list contains all info about new order
+        """
+
+        query = {
+            'market': pair,
+            'side': side,
+            'price': price,
+            'type': _type,
+            'size': size,
+            'reduceOnly': reduceOnly,
+            'ioc': ioc,
+            'postOnly': postOnly,
+        }
+
+        if clientId != None:
+            query.update({
+                'clientId': clientId
+            })
+        
+        return self._send_request('private', 'POST', f"orders", query)
