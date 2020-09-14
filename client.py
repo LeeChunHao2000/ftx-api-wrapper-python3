@@ -30,7 +30,9 @@ class Client(object):
         if scope.lower() == 'private':
             nonce = str(get_current_timestamp())
             payload = f'{nonce}{method.upper()}{endpoint}'
-            if query:
+            if method is 'GET' and query:
+                payload += '?' + urlencode(query)
+            elif query:
                 payload += json.dumps(query)
             print (payload)
             sign = hmac.new(bytes(self._api_secret, 'utf-8'), bytes(payload, 'utf-8'), hashlib.sha256).hexdigest()
@@ -92,6 +94,7 @@ class Client(object):
 
         :return: a list contains all available markets
         """
+
         return self._send_request('public', 'GET', f"markets")
 
     # Private API
@@ -104,3 +107,21 @@ class Client(object):
         """
 
         return self._send_request('private', 'GET', f"account")
+    
+    def get_private_account_positions(self, showAvgPrice=False):
+        """
+        https://docs.ftx.com/#get-positions
+
+        :return: a dict contains all positions
+        """
+        
+        return self._send_request('private', 'GET', f"positions", {'showAvgPrice': showAvgPrice})
+    
+    def get_private_all_subaccounts(self):
+        """
+        https://docs.ftx.com/#get-all-subaccounts
+        
+        :return: a list contains all subaccounts
+        """
+
+        return self._send_request('private', 'GET', f"subaccounts")
