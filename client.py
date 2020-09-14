@@ -116,6 +116,81 @@ class Client(object):
     
         return self._send_request('public', 'GET', f"/markets/{pair}/orderbook", {'depth': depth})
 
+    def get_public_recent_trades(self, pair, limit=20, start_time=None, end_time=None):
+        """
+        https://docs.ftx.com/#get-trades
+
+        :param pair: the trading pair to query
+        :param limit: the records limit to query
+        :param start_time: the target period after Epoch time in seconds
+        :param end_time: the target period before Epoch time in seconds
+        :return: a list contains all completed orders in exchange
+        """
+
+        query = {
+            'limit': limit,
+        }
+
+        if start_time != None:
+            query.update({ 
+                'start_time': start_time,
+            })
+        
+        if end_time != None:
+            query.update({ 
+                'end_time': end_time
+            })
+
+        return self._send_request('public', 'GET', f"/markets/{pair}/trades", query)
+
+    def get_public_k_line(self, pair, resolution=14400, limit=20, start_time=None, end_time=None):
+        """
+        https://docs.ftx.com/#get-historical-prices
+
+        :param pair: the trading pair to query
+        :param resolution: the time period of K line in seconds
+        :param limit: the records limit to query
+        :param start_time: the target period after Epoch time in seconds
+        :param end_time: the target period before Epoch time in seconds
+        :return: a list contains all OHLC prices in exchange
+        """
+
+        query = {
+            'resolution': resolution,
+            'limit': limit,
+        }
+
+        if start_time != None:
+            query.update({ 
+                'start_time': start_time,
+            })
+        
+        if end_time != None:
+            query.update({ 
+                'end_time': end_time
+            })
+
+        return self._send_request('public', 'GET', f"/markets/{pair}/candles", query)
+    
+    def get_public_all_futures(self):
+        """
+        https://docs.ftx.com/#list-all-futures
+
+        :return: a list contains all available futures
+        """
+
+        return self._send_request('public', 'GET', f"/futures")
+    
+    def get_public_single_future(self, pair):
+        """
+        https://docs.ftx.com/#get-single-market
+
+        :param pair: the trading pair to query
+        :return: a list contains single future info
+        """
+
+        return self._send_request('public', 'GET', f"futures/{pair.upper()}")
+        
     # Private API
 
     def get_private_account_information(self):
