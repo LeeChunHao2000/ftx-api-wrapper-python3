@@ -7,8 +7,6 @@ from urllib.parse import urlencode
 
 from constants import *
 from helpers import *
-
-
 class Client(object):
     def __init__(self, key, secret, subaccount=None, timeout=30):
         self._api_key = key
@@ -200,3 +198,55 @@ class Client(object):
             })
 
         return self._send_request('private', 'GET', f"wallet/deposits", query)
+
+    def get_private_wallet_withdraw_history(self, limit=20, start_time=None, end_time=None):
+        """
+        https://docs.ftx.com/#get-withdrawal-history
+
+        :param limit: the records limit to query
+        :param start_time: the target period after Epoch time in seconds
+        :param end_time: the target period before Epoch time in seconds
+        :return: a list contains withdraw history
+        """
+    
+        query = {
+            'limit': limit,
+        }
+
+        if start_time != None:
+            query.update({ 
+                'start_time': start_time,
+            })
+        
+        if end_time != None:
+            query.update({ 
+                'end_time': end_time
+            })
+
+        return self._send_request('private', 'GET', f"wallet/withdrawals", query)
+
+    def get_private_wallet_airdrops(self, limit=20, start_time=None, end_time=None):
+        """
+        https://docs.ftx.com/#get-airdrops
+
+        :param limit: the records limit to query
+        :param start_time: the target period after Epoch time in seconds
+        :param end_time: the target period before Epoch time in seconds
+        :return: a list contains airdrop history
+        """
+    
+        query = {
+            'limit': limit,
+        }
+
+        if start_time != None:
+            query.update({ 
+                'start_time': start_time,
+            })
+        
+        if end_time != None:
+            query.update({ 
+                'end_time': end_time
+            })
+
+        return self._send_request('private', 'GET', f"wallet/airdrops", query)
