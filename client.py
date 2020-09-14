@@ -665,3 +665,34 @@ class Client(object):
         """
 
         return self._send_request('private', 'DELETE', f"subaccounts", {'nickname': name})
+
+    # TODO: Endpoint Error > Not allowed with internal-transfers-disabled permissions
+    def set_private_transfer_balances(self, coin, size, source, destination):
+        """
+        https://docs.ftx.com/?python#transfer-between-subaccounts
+
+        :param coin: the transfering coin to query
+        :param size: the size wanna transfer to query
+        :param source: the name of the source subaccount. Use null or 'main' for the main account
+        :param destination: the name of the destination subaccount. Use null or 'main' for the main account 
+        :return: a list contains status
+        """
+
+        query = {
+            'coin': coin,
+            'size': size,
+            'source': source,
+            'destination': destination
+        }
+
+        return self._send_request('private', 'POST', f"subaccounts/transfer", query)
+
+    def set_private_change_account_leverage(self, leverage):
+        """
+        https://docs.ftx.com/?python#change-account-leverage
+
+        :param leverage: desired acccount-wide leverage setting
+        :return: a list contains status
+        """
+
+        return self._send_request('private', 'POST', f"account/leverage", {'leverage': leverage})
