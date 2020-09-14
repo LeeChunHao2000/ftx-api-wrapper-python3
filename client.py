@@ -363,7 +363,7 @@ class Client(object):
             })
 
         return self._send_request('private', 'GET', f"wallet/deposits", query)
-
+    
     def get_private_wallet_withdraw_history(self, limit=20, start_time=None, end_time=None):
         """
         https://docs.ftx.com/#get-withdrawal-history
@@ -435,11 +435,52 @@ class Client(object):
         
         if end_time != None:
             query.update({ 
-                'end_time': end_time
+                'end_time': end_time,
             })
 
         if coin != None:
             query.update({ 
                 'future': coin.upper() + '-PERP'
-            })    
+            })
+
         return self._send_request('private', 'GET', f"funding_payments", query)
+
+    def get_private_bills(self, pair, limit=20, start_time=None, end_time=None, order=None, _orderId=None):
+        """
+        https://docs.ftx.com/#fills
+
+        :param pair: the trading pair to query
+        :param limit: the records limit to query
+        :param start_time: the target period after Epoch time in seconds
+        :param end_time: the target period before Epoch time in seconds
+        :param order: sort the bill by created time, default is descending, supply 'asc' to receive fills in ascending order of time
+        :param _orderId: the id of the order
+        :return: a list contains all bills
+        """
+
+        query = {
+            'market': pair,
+            'limit': limit,
+        }
+
+        if start_time != None:
+            query.update({ 
+                'start_time': start_time,
+            })
+        
+        if end_time != None:
+            query.update({ 
+                'end_time': end_time,
+            })
+
+        if order != None:
+            query.update({
+                'order': order,
+            })
+
+        if _orderId != None:
+            query.update({
+                'orderId': _orderId
+            })
+        
+        return self._send_request('private', 'GET', f"fills", query)
