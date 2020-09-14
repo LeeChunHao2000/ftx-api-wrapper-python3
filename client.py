@@ -259,7 +259,6 @@ class Client(object):
 
         return self._send_request('public', 'GET', f"indexes/{index}/candles", query)
 
-
     # Private API
 
     def get_private_account_information(self):
@@ -539,7 +538,7 @@ class Client(object):
         https://docs.ftx.com/?python#get-open-trigger-orders
 
         :param pair: the trading pair to query
-        :param _type: type of trigger order (stop, trailing_stop, or take_profit)
+        :param _type: type of trigger order, should only be stop, trailing_stop, or take_profit
         :return: a list contains all open trigger orders
         """
 
@@ -566,3 +565,68 @@ class Client(object):
         """
 
         return self._send_request('private', 'GET', f"conditional_orders/{_orderId}/triggers")
+
+    def get_private_trigger_order_history(self, pair=None, start_time=None, end_time=None, side=None,
+                                          _type=None, _orderType=None, limit=None):
+        """
+        https://docs.ftx.com/?python#get-trigger-order-history
+
+        :param pair: the trading pair to query
+        :param start_time: the target period after Epoch time in seconds
+        :param end_time: the target period before Epoch time in seconds
+        :param side: the trading side, should only be buy or sell
+        :param _type: type of trigger order, should only be stop, trailing_stop, or take_profit
+        :param _type: the order type, should only be limit or market
+        :param limit: the records limit to query
+        :return: a list contains all history trigger orders
+        """
+
+        query = {}
+
+        if pair != None:
+            query.update({ 
+                'market': pair,
+            })
+
+        if start_time != None:
+            query.update({ 
+                'start_time': start_time,
+            })
+        
+        if end_time != None:
+            query.update({ 
+                'end_time': end_time,
+            })
+
+        if side != None:
+            query.update({ 
+                'side': side,
+            })
+
+        if _type != None:
+            query.update({ 
+                'type': _type,
+            })
+
+        if _orderType != None:
+            query.update({ 
+                'orderType': _orderType,
+            })
+
+        if limit != None:
+            query.update({ 
+                'limit': limit
+            })
+
+        return self._send_request('private', 'GET', f"conditional_orders/history", query)
+
+    # Private API (Write)
+    def set_private_create_subaccount(self, name):
+        """
+        https://docs.ftx.com/?python#create-subaccount
+
+        :param name: new subaccount name
+        :return: a list contains new subaccount info
+        """
+
+        return self._send_request('private', 'POST', f"subaccounts", {'nickname': name})
