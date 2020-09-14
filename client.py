@@ -169,7 +169,7 @@ class Client(object):
         https://docs.ftx.com/#get-deposit-address
 
         :param currency: the specific coin to endpoint
-        :param chain: the blockchain deposit from
+        :param chain: the blockchain deposit from, should be 'omni' or 'erc20', 'trx' or 'sol'
         :return: a list contains deposit address
         """
 
