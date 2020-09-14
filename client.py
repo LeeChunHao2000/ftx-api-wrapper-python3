@@ -533,3 +533,36 @@ class Client(object):
             })
 
         return self._send_request('private', 'GET', f"orders/history", query)
+
+    def get_private_open_trigger_orders(self, pair=None, _type=None):
+        """
+        https://docs.ftx.com/?python#get-open-trigger-orders
+
+        :param pair: the trading pair to query
+        :param _type: type of trigger order (stop, trailing_stop, or take_profit)
+        :return: a list contains all open trigger orders
+        """
+
+        query = {}
+
+        if pair != None:
+            query.update({ 
+                'market': pair,
+            })
+
+        if _type != None:
+            query.update({ 
+                'type': _type
+            })
+
+        return self._send_request('private', 'GET', f"conditional_orders", query)
+
+    def get_private_trigger_order_triggers(self, _orderId):
+        """
+        https://docs.ftx.com/?python#get-open-trigger-orders
+
+        :param _orderId: the id of the order
+        :return: a list contains trigger order triggers
+        """
+
+        return self._send_request('private', 'GET', f"conditional_orders/{_orderId}/triggers")
