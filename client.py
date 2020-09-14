@@ -415,3 +415,31 @@ class Client(object):
             })
 
         return self._send_request('private', 'GET', f"wallet/airdrops", query)
+
+    def get_private_funding_payments(self, coin=None, start_time=None, end_time=None):
+        """
+        https://docs.ftx.com/#funding-payments
+
+        :param coin: the trading coin to query
+        :param start_time: the target period after Epoch time in seconds
+        :param end_time: the target period before Epoch time in seconds
+        :return: a list contains all funding payments of perpetual future
+        """
+
+        query = {}
+
+        if start_time != None:
+            query.update({ 
+                'start_time': start_time,
+            })
+        
+        if end_time != None:
+            query.update({ 
+                'end_time': end_time
+            })
+
+        if coin != None:
+            query.update({ 
+                'future': coin.upper() + '-PERP'
+            })    
+        return self._send_request('private', 'GET', f"funding_payments", query)
