@@ -161,3 +161,13 @@ class Client(object):
         """
         
         return self._send_request('private', 'GET', f"wallet/all_balances")
+
+    # TODO: There is no params to choose deposit blockchain
+    def get_private_wallet_deposit_address(self, coin):
+        """
+        https://docs.ftx.com/#get-deposit-address
+
+        :return: a list contains deposit address
+        """
+
+        return self._send_request('private', 'GET', f"wallet/deposit_address/{coin.upper()}")
