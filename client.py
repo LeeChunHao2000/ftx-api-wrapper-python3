@@ -94,7 +94,7 @@ class Client(object):
         """
 
         return self._send_request('public', 'GET', f"markets")
-
+    
     def get_public_single_market(self, pair):
         """
         https://docs.ftx.com/#get-single-market
@@ -104,17 +104,17 @@ class Client(object):
         """
 
         return self._send_request('public', 'GET', f"markets/{pair.upper()}")
-
+    
     def get_public_orderbook(self, pair, depth=20):
         """
         https://docs.ftx.com/#get-orderbook
 
         :param pair: the trading pair to query
-        :param depth: the price levels depth to query
+        :param depth: the price levels depth to query (max: 100 default: 20)
         :return: a dict contains asks and bids data
         """
     
-        return self._send_request('public', 'GET', f"/markets/{pair}/orderbook", {'depth': depth})
+        return self._send_request('public', 'GET', f"markets/{pair}/orderbook", {'depth': depth})
 
     def get_public_recent_trades(self, pair, limit=20, start_time=None, end_time=None):
         """
@@ -141,7 +141,7 @@ class Client(object):
                 'end_time': end_time
             })
 
-        return self._send_request('public', 'GET', f"/markets/{pair}/trades", query)
+        return self._send_request('public', 'GET', f"markets/{pair}/trades", query)
 
     def get_public_k_line(self, pair, resolution=14400, limit=20, start_time=None, end_time=None):
         """
@@ -170,8 +170,8 @@ class Client(object):
                 'end_time': end_time
             })
 
-        return self._send_request('public', 'GET', f"/markets/{pair}/candles", query)
-    
+        return self._send_request('public', 'GET', f"markets/{pair}/candles", query)
+
     def get_public_all_futures(self):
         """
         https://docs.ftx.com/#list-all-futures
@@ -183,14 +183,83 @@ class Client(object):
     
     def get_public_single_future(self, pair):
         """
-        https://docs.ftx.com/#get-single-market
+        https://docs.ftx.com/#get-future
 
         :param pair: the trading pair to query
         :return: a list contains single future info
         """
 
         return self._send_request('public', 'GET', f"futures/{pair.upper()}")
+
+    def get_public_future_stats(self, pair):
+        """
+        https://docs.ftx.com/#get-future-stats
+
+        :param pair: the trading pair to query
+        :return: a list contains stats of a future
+        """
+
+        return self._send_request('public', 'GET', f"futures/{pair.upper()}/stats")
+    
+    def get_public_all_funding_rates(self):
+        """
+        https://docs.ftx.com/#get-funding-rates
+
+        :return: a list contains all funding rate of perpetual futures
+        """
+
+        return self._send_request('public', 'GET', f"funding_rates")
+
+    # TODO: Note that this only applies to index futures, e.g. ALT/MID/SHIT/EXCH/DRAGON.
+    def get_public_etf_future_index(self, index):
+        """
+        https://docs.ftx.com/#get-index-weights
+
+        :param index: the trading index to query
+        :return: a list contains all component coins in ETF Future
+        """
+
+        return self._send_request('public', 'GET', f"indexes/{index}/weights")
+
+    def get_public_all_expired_futures(self):
+        """
+        https://docs.ftx.com/#get-expired-futures
+
+        :return: a list contains all expired futures
+        """
+
+        return self._send_request('public', 'GET', f"expired_futures")
+
+    def get_public_index_k_line(self, index, resolution=14400, limit=20, start_time=None, end_time=None):
+        """
+        https://docs.ftx.com/#get-historical-index
+
+        :param index: the trading index to query
+        :param resolution: the time period of K line in seconds
+        :param limit: the records limit to query
+        :param start_time: the target period after Epoch time in seconds
+        :param end_time: the target period before Epoch time in seconds
+        :return: a list contains all OHLC prices of etf index in exchange
+        """
+
+        query = {
+            'resolution': resolution,
+            'limit': limit,
+        }
+
+        if start_time != None:
+            query.update({ 
+                'start_time': start_time,
+            })
         
+        if end_time != None:
+            query.update({ 
+                'end_time': end_time
+            })
+
+        return self._send_request('public', 'GET', f"indexes/{index}/candles", query)
+
+
     # Private API
 
     def get_private_account_information(self):
