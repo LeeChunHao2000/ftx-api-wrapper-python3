@@ -630,3 +630,38 @@ class Client(object):
         """
 
         return self._send_request('private', 'POST', f"subaccounts", {'nickname': name})
+
+
+    def set_private_delete_subaccount(self, name):
+        """
+        https://docs.ftx.com/?python#delete-subaccount
+
+        :param name: the nickname wanna delete
+        :return: a list contains status
+        """
+
+    def set_private_change_subaccount_name(self, name, newname):
+        """
+        https://docs.ftx.com/?python#change-subaccount-name
+
+        :param name: current subaccount name
+        :param newname: new nickname of subaccount
+        :return: a list contains status
+        """
+
+        query = {
+            'nickname': name,
+            'newNickname': newname
+        }
+
+        return self._send_request('private', 'POST', f"subaccounts/update_name", query)
+
+    def set_private_delete_subaccount(self, name):
+        """
+        https://docs.ftx.com/?python#delete-subaccount
+
+        :param name: the nickname wanna delete
+        :return: a list contains status
+        """
+
+        return self._send_request('private', 'DELETE', f"subaccounts", {'nickname': name})
