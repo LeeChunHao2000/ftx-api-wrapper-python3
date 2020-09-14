@@ -576,7 +576,7 @@ class Client(object):
         :param end_time: the target period before Epoch time in seconds
         :param side: the trading side, should only be buy or sell
         :param _type: type of trigger order, should only be stop, trailing_stop, or take_profit
-        :param _type: the order type, should only be limit or market
+        :param _orderType: the order type, should only be limit or market
         :param limit: the records limit to query
         :return: a list contains all history trigger orders
         """
