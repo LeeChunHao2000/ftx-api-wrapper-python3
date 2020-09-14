@@ -95,6 +95,27 @@ class Client(object):
 
         return self._send_request('public', 'GET', f"markets")
 
+    def get_public_single_market(self, pair):
+        """
+        https://docs.ftx.com/#get-single-market
+
+        :param pair: the trading pair to query
+        :return: a list contains single market info
+        """
+
+        return self._send_request('public', 'GET', f"markets/{pair.upper()}")
+
+    def get_public_orderbook(self, pair, depth=20):
+        """
+        https://docs.ftx.com/#get-orderbook
+
+        :param pair: the trading pair to query
+        :param depth: the price levels depth to query
+        :return: a dict contains asks and bids data
+        """
+    
+        return self._send_request('public', 'GET', f"/markets/{pair}/orderbook", {'depth': depth})
+
     # Private API
 
     def get_private_account_information(self):
