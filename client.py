@@ -484,3 +484,52 @@ class Client(object):
             })
         
         return self._send_request('private', 'GET', f"fills", query)
+
+    def get_private_open_orders(self, pair=None):
+        """
+        https://docs.ftx.com/?python#get-open-orders
+
+        :param pair: the trading pair to query
+        :return: a list contains all open orders
+        """
+        query = {}
+        
+        if pair is not None:
+            query['market'] = pair
+
+        return self._send_request('private', 'GET', f"orders", query)
+
+    def get_private_order_history(self, pair=None, start_time=None, end_time=None, limit=None):
+        """
+        https://docs.ftx.com/?python#get-order-history
+
+        :param pair: the trading pair to query
+        :param start_time: the target period after Epoch time in seconds
+        :param end_time: the target period before Epoch time in seconds
+        :param limit: the records limit to query
+        :return: a list contains all history orders
+        """
+
+        query = {}
+
+        if pair != None:
+            query.update({ 
+                'market': pair,
+            })
+
+        if start_time != None:
+            query.update({ 
+                'start_time': start_time,
+            })
+        
+        if end_time != None:
+            query.update({ 
+                'end_time': end_time,
+            })
+
+        if limit != None:
+            query.update({ 
+                'limit': limit
+            })
+
+        return self._send_request('private', 'GET', f"orders/history", query)
