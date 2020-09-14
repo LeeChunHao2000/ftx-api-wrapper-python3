@@ -81,7 +81,7 @@ class Client(object):
         elif method == 'POST':
             response = requests.post(url, headers = headers, json = query).json()
         elif method == 'DELETE':
-            response == requests.delete(url, headers = headers, json = query).json()
+            response = requests.delete(url, headers = headers, json = query).json()
 
         return response
 
