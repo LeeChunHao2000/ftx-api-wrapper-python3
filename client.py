@@ -143,3 +143,21 @@ class Client(object):
         """
 
         return self._send_request('private', 'GET', f"wallet/coins")
+
+    def get_private_wallet_balances(self):
+        """
+        https://docs.ftx.com/#get-balances
+
+        :return: a list contains current account balances
+        """
+
+        return self._send_request('private', 'GET', f"wallet/balances")
+
+    def get_private_wallet_all_balances(self):
+        """
+        https://docs.ftx.com/#get-balances-of-all-accounts
+
+        :return: a list contains all accounts balances
+        """
+        
+        return self._send_request('private', 'GET', f"wallet/all_balances")
