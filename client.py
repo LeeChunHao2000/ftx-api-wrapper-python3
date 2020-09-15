@@ -731,3 +731,105 @@ class Client(object):
             })
         
         return self._send_request('private', 'POST', f"orders", query)
+
+    def set_private_create_trigger_order(self, pair, side, triggerPrice, orderPrice=None, size,
+                                         _type='stop', reduceOnly=False, retryUntilFilled=True):
+        """
+        https://docs.ftx.com/?python#place-trigger-order
+
+        :param pair: the trading pair to query. e.g. "BTC/USD" for spot, "XRP-PERP" for futures
+        :param side: the trading side, should only be buy or sell
+        :param triggerPrice: the order trigger price
+        :param orderPrice: the order price, order type is limit if this is specified; otherwise market
+        :param size: the amount of the order for the trading pair
+        :param _type: type of order, should only be stop, trailingStop or takeProfit, default is stop
+        :param reduceOnly: only reduce position, default is false (future only)
+        :param retryUntilFilled: Whether or not to keep re-triggering until filled. optional, default true for market orders
+        :return: a list contains all info about new trigger order
+        """
+
+        query = {
+            'market': pair,
+            'side': side,
+            'triggerPrice': triggerPrice,
+        }
+
+        if orderPrice != None:
+            query.update({
+                'orderPrice': orderPrice,
+            })
+        
+        query.update({
+            'size': size,
+            'type': _type,
+            'reduceOnly': reduceOnly,
+            'retryUntilFilled': retryUntilFilled
+        })
+
+        return self._send_request('private', 'POST', f"conditional_orders", query)
+
+    # TODO: Either price or size must be specified
+    def set_private_modify_order(self, orderId, price=None, size=None, clientId=None):
+        """
+        https://docs.ftx.com/#modify-order
+
+        Please note that the order's queue priority will be reset, and the order ID of the modified order will be different from that of the original order. Also note: this is implemented as cancelling and replacing your order. There's a chance that the order meant to be cancelled gets filled and its replacement still gets placed.
+
+        :param orderId: the order ID
+        :param price: the modify price
+        :param size: the modify amount of the order for the trading pair
+        :param clientId: client order id
+        :return a list contains all info after modify the order
+        """
+
+        query = {}
+
+        if price != None:
+            query.update = ({
+                'price': price,
+            })
+
+        if size != None:
+            query.update = ({
+                'size': size,
+            })
+
+        if clientId != None:
+            query.update({
+                'clientId': clientId
+            })
+
+        return self._send_request('private', 'POST', f"orders/{orderId}/modify", query)
+
+    # TODO: Either price or size must be specified
+    def set_private_modify_order_by_clientId(self, clientOrderId, price=None, size=None, clientId=None)
+        """
+        https://docs.ftx.com/#modify-order-by-client-id
+
+        Please note that the order's queue priority will be reset, and the order ID of the modified order will be different from that of the original order. Also note: this is implemented as cancelling and replacing your order. There's a chance that the order meant to be cancelled gets filled and its replacement still gets placed.
+
+        :param clientOrderId: the client order ID
+        :param price: the modify price
+        :param size: the modify amount of the order for the trading pair
+        :param clientId: client order id
+        :return a list contains all info after modify the order
+        """
+
+        query = {}
+
+        if price != None:
+            query.update = ({
+                'price': price,
+            })
+
+        if size != None:
+            query.update = ({
+                'size': size,
+            })
+
+        if clientId != None:
+            query.update({
+                'clientId': clientId
+            })
+
+        return self._send_request('private', 'POST', f"orders/by_client_id/{clientOrderId}/modify", query)
