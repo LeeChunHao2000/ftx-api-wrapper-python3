@@ -8,7 +8,7 @@ USE THIS WRAPPER AT YOUR OWN RISK, I WILL NOT CORRESPOND TO ANY LOSES
 
 ## Features
 
-- Except OTC and Option, implementation of all public and private endpoints
+- Except OTC and Option, implementation of all [public] and [private] endpoints
 - Simple handling of [authentication](https://docs.ftx.com/#authentication) with API key and secret
 - For asset safety, WITHDRAWAL function will never be supported !
 
