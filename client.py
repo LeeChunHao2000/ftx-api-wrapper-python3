@@ -620,6 +620,26 @@ class Client(object):
 
         return self._send_request('private', 'GET', f"conditional_orders/history", query)
 
+    def get_private_order_status(self, orderId):
+        """
+        https://docs.ftx.com/#get-order-status
+
+        :param orderId: the order ID
+        :return a list contains status of the order
+        """
+
+        return self._send_request('private', 'GET', f"orders/{orderId}")
+
+    def get_public_order_status_by_clientId(self, clientId):
+        """
+        https://docs.ftx.com/#get-order-status-by-client-id
+
+        :param clientOrderId: the client order ID
+        :return a list contains status of the order
+        """
+
+        return self._send_request('private', 'GET', f"orders/by_client_id/{clientId}")
+
     # Private API (Write)
     def set_private_create_subaccount(self, name):
         """
@@ -630,16 +650,7 @@ class Client(object):
         """
 
         return self._send_request('private', 'POST', f"subaccounts", {'nickname': name})
-
-
-    def set_private_delete_subaccount(self, name):
-        """
-        https://docs.ftx.com/?python#delete-subaccount
-
-        :param name: the nickname wanna delete
-        :return: a list contains status
-        """
-
+    
     def set_private_change_subaccount_name(self, name, newname):
         """
         https://docs.ftx.com/?python#change-subaccount-name
@@ -696,7 +707,7 @@ class Client(object):
         """
 
         return self._send_request('private', 'POST', f"account/leverage", {'leverage': leverage})
-    
+
     def set_private_create_order(self, pair, side, price, _type, size, reduceOnly=False,
                                  ioc=False, postOnly=False, clientId=None):
         """
@@ -706,8 +717,8 @@ class Client(object):
         :param side: the trading side, should only be buy or sell
         :param price: the order price, Send null for market orders.
         :param _type: type of order, should only be limit or market
-        :param size:  the amount of the order for the trading pair
-        :param reduceOnly: only reduce position, default is false
+        :param size: the amount of the order for the trading pair
+        :param reduceOnly: only reduce position, default is false (future only)
         :param ioc: immediate or cancel order, default is false
         :param postOnly: always maker, default is false
         :param clientId: client order id
@@ -833,3 +844,90 @@ class Client(object):
             })
 
         return self._send_request('private', 'POST', f"orders/by_client_id/{clientOrderId}/modify", query)
+
+    def set_private_modify_trigger_order(self, orderId, _type, size, triggerPrice=None, orderPrice=None, trailValue=None):
+        """
+        https://docs.ftx.com/#modify-trigger-order
+
+        Please note that the order ID of the modified order will be different from that of the original order.
+
+
+        :param orderId: the order ID
+        :param _type: type of order, should only be stop, trailingStop or takeProfit, default is stop
+        :param size: the modify amount of the order for the trading pair
+        :param triggerPrice: the modify trigger price
+        :param orderPrice: the order price, order type is limit if this is specified; otherwise market
+        :param trailValue: negative for sell orders; positive for buy orders
+        :return a list contains all info after modify the trigger order
+        """
+
+        if _type is 'stop' or _type is 'takeProfit':
+            query = {
+                'size': size,
+                'triggerPrice': triggerPrice,
+            }
+            if orderPrice is not None:
+                query.update({
+                    'orderPrice': orderPrice
+                })
+        else:
+            query = {
+                'size': size,
+                'trailValue': trailValue
+            }
+
+        return self._send_request('private', 'POST', f"conditional_orders/{orderId}/modify", query)
+
+    def set_private_cancel_order(self, orderId):
+        """
+        https://docs.ftx.com/#cancel-order
+
+        :param orderId: the order ID
+        :return a list contains result
+        """
+
+        return self._send_request('private', "DELETE", f"orders/{orderId}")
+
+
+    def set_private_cancel_order_by_clientID(self, clientId):
+        """
+        https://docs.ftx.com/#cancel-order-by-client-id
+
+        :param clientOrderId: the client order ID
+        :return a list contains result
+        """
+
+        return self._send_request('private', "DELETE", f"orders/by_client_id/{clientId}")
+        
+    def set_private_cancel_trigger_order(self, orderId):
+        """
+        https://docs.ftx.com/#cancel-open-trigger-order
+
+        :param orderId: the order ID
+        :return a list contains result
+        """
+
+        return self._send_request('private', "DELETE", f"conditional_orders/{orderId}")
+
+    def set_private_cancel_all_order(self, pair=None, conditionalOrdersOnly=False, limitOrdersOnly=False):
+        """
+        https://docs.ftx.com/#cancel-all-orders
+
+        :param pair: the trading pair to query.
+        :param conditionalOrdersOnly: default False.
+        :param limitOrdersOnly: default False.
+        :return a list contains result
+        """
+        if pair is not None:
+            query = {
+                'market': pair,
+                'conditionalOrdersOnly': conditionalOrdersOnly,
+                'limitOrdersOnly': limitOrdersOnly
+            }
+        else:
+            query = {
+                'conditionalOrdersOnly': conditionalOrdersOnly,
+                'limitOrdersOnly': limitOrdersOnly
+            }
+        
+        return self._send_request('private', 'DELETE', f"orders", query)
