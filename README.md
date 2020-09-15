@@ -8,4 +8,4 @@ USE THIS WRAPPER AT YOUR OWN RISK, I WILL NOT CORRESPOND TO ANY LOSES
 
 ## Note
 
-For asset safety, this wrapper will never support WITHDRAWAL function !
+For asset safety, WITHDRAWAL function will never be supported !

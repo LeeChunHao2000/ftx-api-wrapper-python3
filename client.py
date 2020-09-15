@@ -37,7 +37,6 @@ class Client(object):
 
             headers.update({
                 # This header is REQUIRED to send JSON data.
-                # or you have to send PLAIN form data instead.
                 'Content-Type': 'application/json',
                 'FTX-KEY': self._api_key,
                 'FTX-SIGN': sign,
@@ -46,7 +45,7 @@ class Client(object):
 
             if self._api_subacc:
                 headers.update({
-                # Only include line if you want to access a subaccount 
+                # If you want to access a subaccount 
                 'FTX-SUBACCOUNT': urllib.parse.quote(self._api_subacc)
             })
 
@@ -122,8 +121,8 @@ class Client(object):
 
         :param pair: the trading pair to query
         :param limit: the records limit to query
-        :param start_time: the target period after Epoch time in seconds
-        :param end_time: the target period before Epoch time in seconds
+        :param start_time: the target period after an Epoch time in seconds
+        :param end_time: the target period before an Epoch time in seconds
         :return: a list contains all completed orders in exchange
         """
 
@@ -150,8 +149,8 @@ class Client(object):
         :param pair: the trading pair to query
         :param resolution: the time period of K line in seconds
         :param limit: the records limit to query
-        :param start_time: the target period after Epoch time in seconds
-        :param end_time: the target period before Epoch time in seconds
+        :param start_time: the target period after an Epoch time in seconds
+        :param end_time: the target period before an Epoch time in seconds
         :return: a list contains all OHLC prices in exchange
         """
 
@@ -237,8 +236,8 @@ class Client(object):
         :param index: the trading index to query
         :param resolution: the time period of K line in seconds
         :param limit: the records limit to query
-        :param start_time: the target period after Epoch time in seconds
-        :param end_time: the target period before Epoch time in seconds
+        :param start_time: the target period after an Epoch time in seconds
+        :param end_time: the target period before an Epoch time in seconds
         :return: a list contains all OHLC prices of etf index in exchange
         """
 
@@ -342,8 +341,8 @@ class Client(object):
         https://docs.ftx.com/#get-deposit-history
 
         :param limit: the records limit to query
-        :param start_time: the target period after Epoch time in seconds
-        :param end_time: the target period before Epoch time in seconds
+        :param start_time: the target period after an Epoch time in seconds
+        :param end_time: the target period before an Epoch time in seconds
         :return: a list contains deposit history
         """
 
@@ -368,8 +367,8 @@ class Client(object):
         https://docs.ftx.com/#get-withdrawal-history
 
         :param limit: the records limit to query
-        :param start_time: the target period after Epoch time in seconds
-        :param end_time: the target period before Epoch time in seconds
+        :param start_time: the target period after an Epoch time in seconds
+        :param end_time: the target period before an Epoch time in seconds
         :return: a list contains withdraw history
         """
     
@@ -394,8 +393,8 @@ class Client(object):
         https://docs.ftx.com/#get-airdrops
 
         :param limit: the records limit to query
-        :param start_time: the target period after Epoch time in seconds
-        :param end_time: the target period before Epoch time in seconds
+        :param start_time: the target period after an Epoch time in seconds
+        :param end_time: the target period before an Epoch time in seconds
         :return: a list contains airdrop history
         """
     
@@ -420,8 +419,8 @@ class Client(object):
         https://docs.ftx.com/#funding-payments
 
         :param coin: the trading coin to query
-        :param start_time: the target period after Epoch time in seconds
-        :param end_time: the target period before Epoch time in seconds
+        :param start_time: the target period after an Epoch time in seconds
+        :param end_time: the target period before an Epoch time in seconds
         :return: a list contains all funding payments of perpetual future
         """
 
@@ -450,8 +449,8 @@ class Client(object):
 
         :param pair: the trading pair to query
         :param limit: the records limit to query
-        :param start_time: the target period after Epoch time in seconds
-        :param end_time: the target period before Epoch time in seconds
+        :param start_time: the target period after an Epoch time in seconds
+        :param end_time: the target period before an Epoch time in seconds
         :param order: sort the bill by created time, default is descending, supply 'asc' to receive fills in ascending order of time
         :param _orderId: the id of the order
         :return: a list contains all bills
@@ -503,8 +502,8 @@ class Client(object):
         https://docs.ftx.com/?python#get-order-history
 
         :param pair: the trading pair to query
-        :param start_time: the target period after Epoch time in seconds
-        :param end_time: the target period before Epoch time in seconds
+        :param start_time: the target period after an Epoch time in seconds
+        :param end_time: the target period before an Epoch time in seconds
         :param limit: the records limit to query
         :return: a list contains all history orders
         """
@@ -572,8 +571,8 @@ class Client(object):
         https://docs.ftx.com/?python#get-trigger-order-history
 
         :param pair: the trading pair to query
-        :param start_time: the target period after Epoch time in seconds
-        :param end_time: the target period before Epoch time in seconds
+        :param start_time: the target period after an Epoch time in seconds
+        :param end_time: the target period before an Epoch time in seconds
         :param side: the trading side, should only be buy or sell
         :param _type: type of trigger order, should only be stop, trailing_stop, or take_profit
         :param _orderType: the order type, should only be limit or market
