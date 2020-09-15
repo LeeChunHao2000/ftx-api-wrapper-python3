@@ -813,7 +813,7 @@ class Client(object):
         return self._send_request('private', 'POST', f"orders/{orderId}/modify", query)
 
     # TODO: Either price or size must be specified
-    def set_private_modify_order_by_clientId(self, clientOrderId, price=None, size=None, clientId=None)
+    def set_private_modify_order_by_clientId(self, clientOrderId, price=None, size=None, clientId=None):
         """
         https://docs.ftx.com/#modify-order-by-client-id
 
