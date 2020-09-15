@@ -743,7 +743,7 @@ class Client(object):
         
         return self._send_request('private', 'POST', f"orders", query)
 
-    def set_private_create_trigger_order(self, pair, side, triggerPrice, orderPrice=None, size,
+    def set_private_create_trigger_order(self, pair, side, triggerPrice, size, orderPrice=None, 
                                          _type='stop', reduceOnly=False, retryUntilFilled=True):
         """
         https://docs.ftx.com/?python#place-trigger-order
