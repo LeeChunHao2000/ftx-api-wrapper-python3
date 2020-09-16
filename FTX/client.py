@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 
 from constants import *
 from helpers import *
+
 class Client(object):
     def __init__(self, key, secret, subaccount=None, timeout=30):
         self._api_key = key
