@@ -44,7 +44,7 @@ The next thing you need to do is import the library and get an instance of the c
 
     >>> from FTX.client import Client
     >>> client = Client('PUY_MY_API_KEY_HERE', 'PUY_MY_API_SECRET_HERE')
-    >>> result = client.get_public_orderbook('BTC/USD', 1)['result']
+    >>> result = client.get_public_orderbook('BTC/USD', 1)
     >>> result
     {'asks': [[10854.5, 11.856]], 'bids': [[10854.0, 0.4315]]}
     >>> result['asks']
