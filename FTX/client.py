@@ -83,7 +83,7 @@ class Client(object):
         elif method == 'DELETE':
             response = requests.delete(url, headers = headers, json = query).json()
 
-        return response
+        return response['result']
 
     # Public API
     def get_public_all_markets(self):
