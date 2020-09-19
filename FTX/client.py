@@ -76,14 +76,20 @@ class Client(object):
         # Build final url here
         url = self._build_url(scope, method, endpoint, query)
 
-        if method == 'GET':
-            response = requests.get(url, headers = headers).json()
-        elif method == 'POST':
-            response = requests.post(url, headers = headers, json = query).json()
-        elif method == 'DELETE':
-            response = requests.delete(url, headers = headers, json = query).json()
+        try:
+            if method == 'GET':
+                response = requests.get(url, headers = headers).json()
+            elif method == 'POST':
+                response = requests.post(url, headers = headers, json = query).json()
+            elif method == 'DELETE':
+                response = requests.delete(url, headers = headers, json = query).json()
+        except Exception as e:
+            print ('[x] Error: {}'.format(e.args[0]))
 
-        return response['result']
+        if 'result' in response:
+            return response['result']
+        else:
+            return response
 
     # Public API
     def get_public_all_markets(self):
