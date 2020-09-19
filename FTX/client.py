@@ -931,3 +931,83 @@ class Client(object):
             }
         
         return self._send_request('private', 'DELETE', f"orders", query)
+
+    # SRM Stake
+
+    def get_private_srm_stake_history(self):
+        """
+        https://docs.ftx.com/#get-stakes
+
+        :return a list contains srm stake history
+        """
+
+        return self._send_request('private', 'GET', f"srm_stakes/stakes")
+    
+    def get_private_srm_unstake_history(self):
+        """
+        https://docs.ftx.com/#unstake-request
+
+        :return a list contains srm unstake history
+        """
+
+        return self._send_request('private', 'GET', f"srm_stakes/unstake_requests")
+    
+    def get_private_srm_stake_balances(self):
+        """
+        https://docs.ftx.com/#get-stake-balances
+
+        :return a list contains actively staked, scheduled for unstaking and lifetime rewards balances
+        """
+
+        return self._send_request('private', 'GET', f"srm_stakes/balances")
+
+    def get_private_srm_stake_rewards_history(self):
+        """
+        https://docs.ftx.com/#get-staking-rewards
+
+        :return a list contains srm staking rewards
+        """
+
+        return self._send_request('private', 'GET', f"srm_stakes/staking_rewards")
+
+    def set_private_srm_unstake(self, coin, size):
+        """
+        https://docs.ftx.com/#unstake-request-2
+
+        :param coin: the staking coin to query
+        :param size: the amount of the request for the stake coin
+        :return a list contains result
+        """
+
+        query = {
+            'coin': coin,
+            'size': size
+        }
+
+        return self._send_request('private', 'POST', f"srm_stakes/unstake_requests", query)
+
+    def set_private_cancel_srm_unstake(self, stakeId):
+        """
+        https://docs.ftx.com/#cancel-unstake-request
+
+        :param stakeId: the id of staking request
+        :return a list contains result
+        """
+
+        return self._send_request('private', "DELETE", f"srm_stakes/unstake_requests/{stakeId}")
+
+    def set_private_srm_stake(self, coin, size):
+        """
+        https://docs.ftx.com/#stake-request
+
+        :param coin: the staking coin to query
+        :param size: the amount of the request for the stake coin
+        :return a list contains result
+        """
+
+        query = {
+            'coin': coin,
+            'size': size
+        }
+
+        return self._send_request('private', 'POST', f"srm_stakes/stakes", query)
