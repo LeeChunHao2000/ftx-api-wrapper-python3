@@ -186,6 +186,19 @@ class Client(object):
         """
 
         return self._send_request('public', 'GET', f"/futures")
+
+    def get_public_all_perpetual_futures(self):
+        """
+        https://docs.ftx.com/#list-all-futures
+
+        :return: a list contains all available perpetual futures
+        """
+        response = []
+        for perpetual in self.get_public_all_futures():
+            if perpetual['perpetual'] is True:
+                response.append(perpetual)
+        
+        return response
     
     def get_public_single_future(self, pair):
         """
