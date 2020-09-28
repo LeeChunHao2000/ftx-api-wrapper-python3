@@ -344,6 +344,20 @@ class Client(object):
         """
         
         return self._send_request('private', 'GET', f"wallet/all_balances")
+
+    def get_private_wallet_single_balance(self, coin):
+        """
+        https://docs.ftx.com/#get-balances
+
+        :params coin: the coin of balance
+        :return: a list contains current account single balance
+        """
+
+        balance_coin = [balance for balance in self.get_private_wallet_balances() if balance['coin'] == coin]
+
+        if balance_coin == []:
+            return None
+        return balance_coin[0]
     
     def get_private_wallet_deposit_address(self, coin, chain):
         """
