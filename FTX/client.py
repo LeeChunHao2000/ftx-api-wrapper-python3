@@ -229,6 +229,30 @@ class Client(object):
 
         return self._send_request('public', 'GET', f"funding_rates")
 
+    def get_public_single_funding_rates(self, future, start_time=None, end_time=None):
+        """
+        https://docs.ftx.com/#get-funding-rates
+
+        :param future: the trading future to query 
+        :return: a list contains all funding rate of perpetual futures
+        """
+
+        query = {
+            'future': future,
+        }
+
+        if start_time != None:
+            query.update({ 
+                'start_time': start_time,
+            })
+        
+        if end_time != None:
+            query.update({ 
+                'end_time': end_time
+            })
+
+        return self._send_request('public', 'GET', f"funding_rates", query)
+
     # TODO: Note that this only applies to index futures, e.g. ALT/MID/SHIT/EXCH/DRAGON.
     def get_public_etf_future_index(self, index):
         """
