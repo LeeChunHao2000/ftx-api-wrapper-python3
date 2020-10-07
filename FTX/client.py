@@ -92,6 +92,7 @@ class Client(object):
             return response
 
     # Public API
+
     def get_public_all_markets(self):
         """
         https://docs.ftx.com/#markets
@@ -698,6 +699,7 @@ class Client(object):
         return self._send_request('private', 'GET', f"orders/by_client_id/{clientId}")
 
     # Private API (Write)
+    
     def set_private_create_subaccount(self, name):
         """
         https://docs.ftx.com/?python#create-subaccount
