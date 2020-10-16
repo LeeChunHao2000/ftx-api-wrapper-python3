@@ -186,7 +186,7 @@ class Client(object):
         :return: a list contains all available futures
         """
 
-        return self._send_request('public', 'GET', f"/futures")
+        return self._send_request('public', 'GET', f"futures")
 
     def get_public_all_perpetual_futures(self):
         """
