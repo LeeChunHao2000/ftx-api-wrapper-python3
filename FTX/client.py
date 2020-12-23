@@ -677,7 +677,7 @@ class Client(object):
 
         return self._send_request('private', 'GET', f"orders/{orderId}")
 
-    def get_public_order_status_by_clientId(self, clientId):
+    def get_private_order_status_by_clientId(self, clientId):
         """
         https://docs.ftx.com/#get-order-status-by-client-id
 
