@@ -24,6 +24,8 @@ If useful, buy me a coffee?
 
     $ git clone https://github.com/LeeChunHao2000/ftx-api-wrapper-python3
 
+ - This wrapper requires [requests](https://github.com/psf/requests)
+
 ## Requirement
 
 1. [Register an account](https://ftx.com/#a=2500518) with FTX exchange _(referral link)_
@@ -51,3 +53,12 @@ The next thing you need to do is import the library and get an instance of the c
     [[10854.5, 11.856]]
     >>> result['bids']
     [[10854.0, 0.4315]]
+
+### Version Logs
+#### 2020-12-24
+
+**Bugfixes**
+ - Fixed a bug with function of cancel orders
+#### 2020-09-14
+
+ - Birth!
