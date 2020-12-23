@@ -30,11 +30,12 @@ class Client(object):
         if scope.lower() == 'private':
             nonce = str(get_current_timestamp())
             payload = f'{nonce}{method.upper()}{endpoint}'
+
             if method is 'GET' and query:
                 payload += '?' + urlencode(query)
             elif query:
                 payload += json.dumps(query)
-            print (payload)
+ 
             sign = hmac.new(bytes(self._api_secret, 'utf-8'), bytes(payload, 'utf-8'), hashlib.sha256).hexdigest()
 
             headers.update({
@@ -83,7 +84,10 @@ class Client(object):
             elif method == 'POST':
                 response = requests.post(url, headers = headers, json = query).json()
             elif method == 'DELETE':
-                response = requests.delete(url, headers = headers, json = query).json()
+                if query == {}:
+                    response = requests.delete(url, headers = headers).json()
+                else:
+                    response = requests.delete(url, headers = headers, json = query).json()
         except Exception as e:
             print ('[x] Error: {}'.format(e.args[0]))
 
@@ -93,7 +97,6 @@ class Client(object):
             return response
 
     # Public API
-
     def get_public_all_markets(self):
         """
         https://docs.ftx.com/#markets
@@ -305,7 +308,6 @@ class Client(object):
         return self._send_request('public', 'GET', f"indexes/{index}/candles", query)
 
     # Private API
-
     def get_private_account_information(self):
         """
         https://docs.ftx.com/#get-account-information
@@ -370,20 +372,6 @@ class Client(object):
         """
         
         return self._send_request('private', 'GET', f"wallet/all_balances")
-
-    def get_private_wallet_single_balance(self, coin):
-        """
-        https://docs.ftx.com/#get-balances
-
-        :params coin: the coin of balance
-        :return: a list contains current account single balance
-        """
-
-        balance_coin = [balance for balance in self.get_private_wallet_balances() if balance['coin'] == coin]
-
-        if balance_coin == []:
-            return None
-        return balance_coin[0]
     
     def get_private_wallet_deposit_address(self, coin, chain):
         """
@@ -700,7 +688,6 @@ class Client(object):
         return self._send_request('private', 'GET', f"orders/by_client_id/{clientId}")
 
     # Private API (Write)
-    
     def set_private_create_subaccount(self, name):
         """
         https://docs.ftx.com/?python#create-subaccount
@@ -784,7 +771,7 @@ class Client(object):
         :param clientId: client order id
         :return: a list contains all info about new order
         """
-
+        
         query = {
             'market': pair,
             'side': side,
