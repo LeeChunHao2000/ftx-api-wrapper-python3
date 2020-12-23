@@ -32,7 +32,7 @@ class Client(object):
             payload = f'{nonce}{method.upper()}{endpoint}'
 
             if method is 'GET' and query:
-                payload += '?' + urlencode(query)
+                payload += '?' + urlencode(query, safe='/')
             elif query:
                 payload += json.dumps(query)
  
@@ -687,6 +687,88 @@ class Client(object):
 
         return self._send_request('private', 'GET', f"orders/by_client_id/{clientId}")
 
+    def get_private_margin_borrow_rates(self):
+        """
+        https://docs.ftx.com/#get-borrow-rates
+
+        :return a list contains borrow rates (include estimate rates and previous rates)
+        """
+
+        return self._send_request('private', 'GET', f"spot_margin/borrow_rates")
+
+    def get_private_margin_lending_rates(self):
+        """
+        https://docs.ftx.com/#get-lending-rates
+
+        :return a list contains lending rates (include estimate rates and previous rates)
+        """
+
+        return self._send_request('private', 'GET', f"spot_margin/lending_rates")
+
+    def get_private_margin_daily_data(self):
+        """
+        https://docs.ftx.com/#get-daily-borrowed-amounts
+
+        :return a list contains average matched borrowed and lent amount over the last 24h
+        """
+
+        return self._send_request('private', 'GET', f"spot_margin/borrow_summary")
+
+    def get_private_margin_all_market_info(self):
+        """
+        https://docs.ftx.com/#get-market-info
+
+        :return a list contains current margin market info
+        """
+
+        return self._send_request('private', 'GET', f"spot_margin/market_info")
+
+    def get_private_margin_single_market_info(self, coin):
+        """
+        https://docs.ftx.com/#get-market-info
+
+        :param coin: the spot margin market to query
+        :return a list contains current margin all markets info
+        """
+
+        return self._send_request('private', 'GET', f"spot_margin/market_info", {'market': coin})
+
+    def get_private_margin_borrow_history(self):
+        """
+        https://docs.ftx.com/#get-borrow-history
+
+        :return a list contains borrow history
+        """
+
+        return self._send_request('private', 'GET', f"spot_margin/borrow_history")
+
+    def get_private_margin_lending_history(self):
+        """
+        https://docs.ftx.com/#get-lending-history
+
+        :return a list contains lending history
+        """
+
+        return self._send_request('private', 'GET', f"spot_margin/lending_history")
+
+    def get_private_margin_lending_offers(self):
+        """
+        https://docs.ftx.com/#get-lending-offers
+
+        :return a list contains lending offers
+        """
+
+        return self._send_request('private', 'GET', f"spot_margin/offers")
+
+    def get_private_margin_lending_info(self):
+        """
+        https://docs.ftx.com/#get-lending-info
+
+        :return a list contains lending info
+        """
+
+        return self._send_request('private', 'GET', f"spot_margin/lending_info")
+
     # Private API (Write)
     def set_private_create_subaccount(self, name):
         """
@@ -1058,3 +1140,21 @@ class Client(object):
         }
 
         return self._send_request('private', 'POST', f"srm_stakes/stakes", query)
+
+    def set_private_margin_lending_offer(self, coin, size, rate):
+        """
+        https://docs.ftx.com/#submit-lending-offer
+
+        :param coin: the lending coin to query
+        :param size: the amount of the request for the lend coin (Cancel for 0)
+        :param rate: the rate wanna offer
+        :return a list contains result
+        """
+
+        query = {
+            'coin': coin,
+            'size': size,
+            'rate': rate
+        }
+
+        return self._send_request('private', 'POST', f"spot_margin/offers", query)

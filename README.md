@@ -59,6 +59,8 @@ The next thing you need to do is import the library and get an instance of the c
 
 **Bugfixes**
  - Fixed a bug with function of cancel orders
+**Features**
+ - Add Spot Margin Support
 #### 2020-09-14
 
  - Birth!
