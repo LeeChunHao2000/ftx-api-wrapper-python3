@@ -714,15 +714,15 @@ class Client(object):
 
         return self._send_request('private', 'GET', f"spot_margin/borrow_summary")
 
-    def get_private_margin_single_market_info(self, coin):
+    def get_private_margin_single_market_info(self, pair):
         """
         https://docs.ftx.com/#get-market-info
 
-        :param coin: the spot margin market to query
+        :param coin: the spot margin trading pair to query
         :return a list contains current margin all markets info
         """
 
-        return self._send_request('private', 'GET', f"spot_margin/market_info", {'market': coin})
+        return self._send_request('private', 'GET', f"spot_margin/market_info", {'market': pair})
 
     def get_private_margin_borrow_history(self):
         """
