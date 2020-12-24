@@ -56,8 +56,9 @@ The next thing you need to do is import the library and get an instance of the c
 
 ### Positions (With Pandas DataFrame)
 
-    >>> result = pd.DataFrame(client.get_private_account_positions()).sort_values(by=['realizedPnl'], ascending=False)
-    >>> result
+    >>> import pandas as pd
+    >>> result = pd.DataFrame(client.get_private_account_positions())
+    >>> result = result.sort_values(by=['realizedPnl'], ascending=False)
             collateralUsed      cost  entryPrice  ...  side     size  unrealizedPnl
     0          0.00000     0.000         NaN  ...   buy     0.00            0.0
     49         0.00000     0.000         NaN  ...   buy     0.00            0.0
