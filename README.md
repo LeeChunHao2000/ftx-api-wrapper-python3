@@ -54,7 +54,7 @@ The next thing you need to do is import the library and get an instance of the c
     >>> result['bids']
     [[10854.0, 0.4315]]
 
-### Positions (With Pandas DataFrame)
+### Positions (DataFrame)
 
     >>> import pandas as pd
     >>> result = pd.DataFrame(client.get_private_account_positions())
