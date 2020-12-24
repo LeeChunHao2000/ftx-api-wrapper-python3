@@ -58,13 +58,13 @@ The next thing you need to do is import the library and get an instance of the c
 
     >>> result = pd.DataFrame(client.get_private_account_positions()).sort_values(by=['realizedPnl'], ascending=False)
     >>> result
-    collateralUsed      cost  entryPrice  estimatedLiquidationPrice      future  initialMarginRequirement  longOrderSize  maintenanceMarginRequirement  netSize  openSize  realizedPnl  recentAverageOpenPrice  recentBreakEvenPrice  recentPnl  shortOrderSize side     size  unrealizedPnl
-0          0.00000     0.000         NaN                        NaN  SUSHI-PERP                       0.1          0.000                          0.03     0.00     0.000  1545.314000                     NaN                   NaN        NaN             0.0  buy     0.00            0.0
-49         0.00000     0.000         NaN                        NaN    UNI-PERP                       0.1          0.000                          0.03     0.00     0.000   680.136701                     NaN                   NaN        NaN             0.0  buy     0.00            0.0
-4        534.51900  2969.550    593.9100                        0.0    ETH-PERP                       0.1          4.000                          0.03     5.00     9.000   563.478660              580.070000            580.070000     69.200             0.0  buy     5.00            0.0
-35       206.22500  2062.250     82.4900                        0.0   BILI-1225                       0.1          0.000                          0.03    25.00    25.000   344.000000               68.730000             68.730000    344.000             0.0  buy    25.00            0.0
-3          0.00000     0.000         NaN                        NaN   TOMO-PERP                       0.1          0.000                          0.03     0.00     0.000   283.613811                     NaN                   NaN        NaN             0.0  buy     0.00            0.0
-
+            collateralUsed      cost  entryPrice  ...  side     size  unrealizedPnl
+    0          0.00000     0.000         NaN  ...   buy     0.00            0.0
+    49         0.00000     0.000         NaN  ...   buy     0.00            0.0
+    4        535.09500  2972.750    594.5500  ...   buy     5.00            0.0
+    35       206.93750  2069.375     82.7750  ...   buy    25.00            0.0
+    3          0.00000     0.000         NaN  ...   buy     0.00            0.0
+    5        152.28000  1522.800      2.5380  ...   buy   600.00            0.0
 ### Version Logs
 #### 2020-12-24
 
