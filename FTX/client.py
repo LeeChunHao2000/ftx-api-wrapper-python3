@@ -1,13 +1,13 @@
 import hashlib
 import hmac
 import json
-import urllib
 import requests
-
+import urllib
 from urllib.parse import urlencode
 
 from .constants import *
 from .helpers import *
+
 
 class Client(object):
     def __init__(self, key, secret, subaccount=None, timeout=30):
@@ -30,13 +30,12 @@ class Client(object):
         if scope.lower() == 'private':
             nonce = str(get_current_timestamp())
             payload = f'{nonce}{method.upper()}{endpoint}'
-
             if method is 'GET' and query:
-                payload += '?' + urlencode(query, safe='/')
+                payload += '?' + urlencode(query)
             elif query:
                 payload += json.dumps(query)
- 
-            sign = hmac.new(bytes(self._api_secret, 'utf-8'), bytes(payload, 'utf-8'), hashlib.sha256).hexdigest()
+            sign = hmac.new(bytes(self._api_secret, 'utf-8'),
+                            bytes(payload, 'utf-8'), hashlib.sha256).hexdigest()
 
             headers.update({
                 # This header is REQUIRED to send JSON data.
@@ -48,9 +47,9 @@ class Client(object):
 
             if self._api_subacc:
                 headers.update({
-                # If you want to access a subaccount 
-                'FTX-SUBACCOUNT': urllib.parse.quote(self._api_subacc)
-            })
+                    # If you want to access a subaccount
+                    'FTX-SUBACCOUNT': urllib.parse.quote(self._api_subacc)
+                })
 
         return headers
 
@@ -80,16 +79,15 @@ class Client(object):
 
         try:
             if method == 'GET':
-                response = requests.get(url, headers = headers).json()
+                response = requests.get(url, headers=headers).json()
             elif method == 'POST':
-                response = requests.post(url, headers = headers, json = query).json()
+                response = requests.post(
+                    url, headers=headers, json=query).json()
             elif method == 'DELETE':
-                if query == {}:
-                    response = requests.delete(url, headers = headers).json()
-                else:
-                    response = requests.delete(url, headers = headers, json = query).json()
+                response = requests.delete(
+                    url, headers=headers, json=query).json()
         except Exception as e:
-            print ('[x] Error: {}'.format(e.args[0]))
+            print('[x] Error: {}'.format(e.args[0]))
 
         if 'result' in response:
             return response['result']
@@ -105,7 +103,7 @@ class Client(object):
         """
 
         return self._send_request('public', 'GET', f"markets")
-    
+
     def get_public_single_market(self, pair):
         """
         https://docs.ftx.com/#get-single-market
@@ -115,7 +113,7 @@ class Client(object):
         """
 
         return self._send_request('public', 'GET', f"markets/{pair.upper()}")
-    
+
     def get_public_orderbook(self, pair, depth=20):
         """
         https://docs.ftx.com/#get-orderbook
@@ -124,7 +122,7 @@ class Client(object):
         :param depth: the price levels depth to query (max: 100 default: 20)
         :return: a dict contains asks and bids data
         """
-    
+
         return self._send_request('public', 'GET', f"markets/{pair}/orderbook", {'depth': depth})
 
     def get_public_recent_trades(self, pair, limit=20, start_time=None, end_time=None):
@@ -143,12 +141,12 @@ class Client(object):
         }
 
         if start_time != None:
-            query.update({ 
+            query.update({
                 'start_time': start_time,
             })
-        
+
         if end_time != None:
-            query.update({ 
+            query.update({
                 'end_time': end_time
             })
 
@@ -172,12 +170,12 @@ class Client(object):
         }
 
         if start_time != None:
-            query.update({ 
+            query.update({
                 'start_time': start_time,
             })
-        
+
         if end_time != None:
-            query.update({ 
+            query.update({
                 'end_time': end_time
             })
 
@@ -190,7 +188,7 @@ class Client(object):
         :return: a list contains all available futures
         """
 
-        return self._send_request('public', 'GET', f"futures")
+        return self._send_request('public', 'GET', f"/futures")
 
     def get_public_all_perpetual_futures(self):
         """
@@ -202,9 +200,9 @@ class Client(object):
         for perpetual in self.get_public_all_futures():
             if perpetual['perpetual'] is True:
                 response.append(perpetual)
-        
+
         return response
-    
+
     def get_public_single_future(self, pair):
         """
         https://docs.ftx.com/#get-future
@@ -224,7 +222,7 @@ class Client(object):
         """
 
         return self._send_request('public', 'GET', f"futures/{pair.upper()}/stats")
-    
+
     def get_public_all_funding_rates(self):
         """
         https://docs.ftx.com/#get-funding-rates
@@ -233,30 +231,6 @@ class Client(object):
         """
 
         return self._send_request('public', 'GET', f"funding_rates")
-
-    def get_public_single_funding_rates(self, future, start_time=None, end_time=None):
-        """
-        https://docs.ftx.com/#get-funding-rates
-
-        :param future: the trading future to query 
-        :return: a list contains all funding rate of perpetual futures
-        """
-
-        query = {
-            'future': future,
-        }
-
-        if start_time != None:
-            query.update({ 
-                'start_time': start_time,
-            })
-        
-        if end_time != None:
-            query.update({ 
-                'end_time': end_time
-            })
-
-        return self._send_request('public', 'GET', f"funding_rates", query)
 
     # TODO: Note that this only applies to index futures, e.g. ALT/MID/SHIT/EXCH/DRAGON.
     def get_public_etf_future_index(self, index):
@@ -296,18 +270,19 @@ class Client(object):
         }
 
         if start_time != None:
-            query.update({ 
+            query.update({
                 'start_time': start_time,
             })
-        
+
         if end_time != None:
-            query.update({ 
+            query.update({
                 'end_time': end_time
             })
 
         return self._send_request('public', 'GET', f"indexes/{index}/candles", query)
 
     # Private API
+
     def get_private_account_information(self):
         """
         https://docs.ftx.com/#get-account-information
@@ -316,7 +291,7 @@ class Client(object):
         """
 
         return self._send_request('private', 'GET', f"account")
-    
+
     def get_private_account_positions(self, showAvgPrice=False):
         """
         https://docs.ftx.com/#get-positions
@@ -324,18 +299,18 @@ class Client(object):
         :param showAvgPrice: display AvgPrice or not
         :return: a dict contains all positions
         """
-        
+
         return self._send_request('private', 'GET', f"positions", {'showAvgPrice': showAvgPrice})
-    
+
     def get_private_all_subaccounts(self):
         """
         https://docs.ftx.com/#get-all-subaccounts
-        
+
         :return: a list contains all subaccounts
         """
 
         return self._send_request('private', 'GET', f"subaccounts")
-    
+
     def get_private_subaccount_balances(self, name):
         """
         https://docs.ftx.com/#get-subaccount-balances
@@ -345,7 +320,7 @@ class Client(object):
         """
 
         return self._send_request('private', 'GET', f"subaccounts/{name}/balances")
-    
+
     def get_private_wallet_coins(self):
         """
         https://docs.ftx.com/#get-coins
@@ -354,7 +329,7 @@ class Client(object):
         """
 
         return self._send_request('private', 'GET', f"wallet/coins")
-    
+
     def get_private_wallet_balances(self):
         """
         https://docs.ftx.com/#get-balances
@@ -363,16 +338,31 @@ class Client(object):
         """
 
         return self._send_request('private', 'GET', f"wallet/balances")
-    
+
+    def get_private_wallet_single_balance(self, coin):
+        """
+        https://docs.ftx.com/#get-balances
+
+        :params coin: the coin of balance
+        :return: a list contains current account single balance
+        """
+
+        balance_coin = [balance for balance in self.get_private_wallet_balances(
+        ) if balance['coin'] == coin]
+
+        if balance_coin == []:
+            return None
+        return balance_coin[0]
+
     def get_private_wallet_all_balances(self):
         """
         https://docs.ftx.com/#get-balances-of-all-accounts
 
         :return: a list contains all accounts balances
         """
-        
+
         return self._send_request('private', 'GET', f"wallet/all_balances")
-    
+
     def get_private_wallet_deposit_address(self, coin, chain):
         """
         https://docs.ftx.com/#get-deposit-address
@@ -399,17 +389,17 @@ class Client(object):
         }
 
         if start_time != None:
-            query.update({ 
+            query.update({
                 'start_time': start_time,
             })
-        
+
         if end_time != None:
-            query.update({ 
+            query.update({
                 'end_time': end_time
             })
 
         return self._send_request('private', 'GET', f"wallet/deposits", query)
-    
+
     def get_private_wallet_withdraw_history(self, limit=20, start_time=None, end_time=None):
         """
         https://docs.ftx.com/#get-withdrawal-history
@@ -419,18 +409,18 @@ class Client(object):
         :param end_time: the target period before an Epoch time in seconds
         :return: a list contains withdraw history
         """
-    
+
         query = {
             'limit': limit,
         }
 
         if start_time != None:
-            query.update({ 
+            query.update({
                 'start_time': start_time,
             })
-        
+
         if end_time != None:
-            query.update({ 
+            query.update({
                 'end_time': end_time
             })
 
@@ -445,18 +435,18 @@ class Client(object):
         :param end_time: the target period before an Epoch time in seconds
         :return: a list contains airdrop history
         """
-    
+
         query = {
             'limit': limit,
         }
 
         if start_time != None:
-            query.update({ 
+            query.update({
                 'start_time': start_time,
             })
-        
+
         if end_time != None:
-            query.update({ 
+            query.update({
                 'end_time': end_time
             })
 
@@ -475,17 +465,17 @@ class Client(object):
         query = {}
 
         if start_time != None:
-            query.update({ 
+            query.update({
                 'start_time': start_time,
             })
-        
+
         if end_time != None:
-            query.update({ 
+            query.update({
                 'end_time': end_time,
             })
 
         if coin != None:
-            query.update({ 
+            query.update({
                 'future': coin.upper() + '-PERP'
             })
 
@@ -510,12 +500,12 @@ class Client(object):
         }
 
         if start_time != None:
-            query.update({ 
+            query.update({
                 'start_time': start_time,
             })
-        
+
         if end_time != None:
-            query.update({ 
+            query.update({
                 'end_time': end_time,
             })
 
@@ -528,7 +518,7 @@ class Client(object):
             query.update({
                 'orderId': _orderId
             })
-        
+
         return self._send_request('private', 'GET', f"fills", query)
 
     def get_private_open_orders(self, pair=None):
@@ -539,7 +529,7 @@ class Client(object):
         :return: a list contains all open orders
         """
         query = {}
-        
+
         if pair is not None:
             query['market'] = pair
 
@@ -559,22 +549,22 @@ class Client(object):
         query = {}
 
         if pair != None:
-            query.update({ 
+            query.update({
                 'market': pair,
             })
 
         if start_time != None:
-            query.update({ 
+            query.update({
                 'start_time': start_time,
             })
-        
+
         if end_time != None:
-            query.update({ 
+            query.update({
                 'end_time': end_time,
             })
 
         if limit != None:
-            query.update({ 
+            query.update({
                 'limit': limit
             })
 
@@ -592,12 +582,12 @@ class Client(object):
         query = {}
 
         if pair != None:
-            query.update({ 
+            query.update({
                 'market': pair,
             })
 
         if _type != None:
-            query.update({ 
+            query.update({
                 'type': _type
             })
 
@@ -631,37 +621,37 @@ class Client(object):
         query = {}
 
         if pair != None:
-            query.update({ 
+            query.update({
                 'market': pair,
             })
 
         if start_time != None:
-            query.update({ 
+            query.update({
                 'start_time': start_time,
             })
-        
+
         if end_time != None:
-            query.update({ 
+            query.update({
                 'end_time': end_time,
             })
 
         if side != None:
-            query.update({ 
+            query.update({
                 'side': side,
             })
 
         if _type != None:
-            query.update({ 
+            query.update({
                 'type': _type,
             })
 
         if _orderType != None:
-            query.update({ 
+            query.update({
                 'orderType': _orderType,
             })
 
         if limit != None:
-            query.update({ 
+            query.update({
                 'limit': limit
             })
 
@@ -677,7 +667,7 @@ class Client(object):
 
         return self._send_request('private', 'GET', f"orders/{orderId}")
 
-    def get_private_order_status_by_clientId(self, clientId):
+    def get_public_order_status_by_clientId(self, clientId):
         """
         https://docs.ftx.com/#get-order-status-by-client-id
 
@@ -686,79 +676,6 @@ class Client(object):
         """
 
         return self._send_request('private', 'GET', f"orders/by_client_id/{clientId}")
-
-    def get_private_margin_borrow_rates(self):
-        """
-        https://docs.ftx.com/#get-borrow-rates
-
-        :return a list contains borrow rates (include estimate rates and previous rates)
-        """
-
-        return self._send_request('private', 'GET', f"spot_margin/borrow_rates")
-
-    def get_private_margin_lending_rates(self):
-        """
-        https://docs.ftx.com/#get-lending-rates
-
-        :return a list contains lending rates (include estimate rates and previous rates)
-        """
-
-        return self._send_request('private', 'GET', f"spot_margin/lending_rates")
-
-    def get_private_margin_daily_data(self):
-        """
-        https://docs.ftx.com/#get-daily-borrowed-amounts
-
-        :return a list contains average matched borrowed and lent amount over the last 24h
-        """
-
-        return self._send_request('private', 'GET', f"spot_margin/borrow_summary")
-
-    def get_private_margin_single_market_info(self, pair):
-        """
-        https://docs.ftx.com/#get-market-info
-
-        :param coin: the spot margin trading pair to query
-        :return a list contains current margin all markets info
-        """
-
-        return self._send_request('private', 'GET', f"spot_margin/market_info", {'market': pair})
-
-    def get_private_margin_borrow_history(self):
-        """
-        https://docs.ftx.com/#get-borrow-history
-
-        :return a list contains borrow history
-        """
-
-        return self._send_request('private', 'GET', f"spot_margin/borrow_history")
-
-    def get_private_margin_lending_history(self):
-        """
-        https://docs.ftx.com/#get-lending-history
-
-        :return a list contains lending history
-        """
-
-        return self._send_request('private', 'GET', f"spot_margin/lending_history")
-
-    def get_private_margin_lending_offers(self):
-        """
-        https://docs.ftx.com/#get-lending-offers
-
-        :return a list contains lending offers
-        """
-
-        return self._send_request('private', 'GET', f"spot_margin/offers")
-
-    def get_private_margin_lending_info(self):
-        """
-        https://docs.ftx.com/#get-lending-info
-
-        :return a list contains lending info
-        """
-
-        return self._send_request('private', 'GET', f"spot_margin/lending_info")
 
     # Private API (Write)
     def set_private_create_subaccount(self, name):
@@ -770,7 +687,7 @@ class Client(object):
         """
 
         return self._send_request('private', 'POST', f"subaccounts", {'nickname': name})
-    
+
     def set_private_change_subaccount_name(self, name, newname):
         """
         https://docs.ftx.com/?python#change-subaccount-name
@@ -844,7 +761,7 @@ class Client(object):
         :param clientId: client order id
         :return: a list contains all info about new order
         """
-        
+
         query = {
             'market': pair,
             'side': side,
@@ -860,10 +777,10 @@ class Client(object):
             query.update({
                 'clientId': clientId
             })
-        
+
         return self._send_request('private', 'POST', f"orders", query)
 
-    def set_private_create_trigger_order(self, pair, side, triggerPrice, size, orderPrice=None, 
+    def set_private_create_trigger_order(self, pair, side, triggerPrice, size, orderPrice=None,
                                          _type='stop', reduceOnly=False, retryUntilFilled=True):
         """
         https://docs.ftx.com/?python#place-trigger-order
@@ -889,7 +806,7 @@ class Client(object):
             query.update({
                 'orderPrice': orderPrice,
             })
-        
+
         query.update({
             'size': size,
             'type': _type,
@@ -1008,7 +925,6 @@ class Client(object):
 
         return self._send_request('private', "DELETE", f"orders/{orderId}")
 
-
     def set_private_cancel_order_by_clientID(self, clientId):
         """
         https://docs.ftx.com/#cancel-order-by-client-id
@@ -1018,7 +934,7 @@ class Client(object):
         """
 
         return self._send_request('private', "DELETE", f"orders/by_client_id/{clientId}")
-        
+
     def set_private_cancel_trigger_order(self, orderId):
         """
         https://docs.ftx.com/#cancel-open-trigger-order
@@ -1049,7 +965,7 @@ class Client(object):
                 'conditionalOrdersOnly': conditionalOrdersOnly,
                 'limitOrdersOnly': limitOrdersOnly
             }
-        
+
         return self._send_request('private', 'DELETE', f"orders", query)
 
     # SRM Stake
@@ -1062,7 +978,7 @@ class Client(object):
         """
 
         return self._send_request('private', 'GET', f"srm_stakes/stakes")
-    
+
     def get_private_srm_unstake_history(self):
         """
         https://docs.ftx.com/#unstake-request
@@ -1071,7 +987,7 @@ class Client(object):
         """
 
         return self._send_request('private', 'GET', f"srm_stakes/unstake_requests")
-    
+
     def get_private_srm_stake_balances(self):
         """
         https://docs.ftx.com/#get-stake-balances
@@ -1132,10 +1048,17 @@ class Client(object):
 
         return self._send_request('private', 'POST', f"srm_stakes/stakes", query)
 
+    def get_private_margin_lending_rates(self):
+        """
+        https://docs.ftx.com/#get-lending-rates
+        :return a list contains lending rates (include estimate rates and previous rates)
+        """
+
+        return self._send_request('private', 'GET', f"spot_margin/lending_rates")
+
     def set_private_margin_lending_offer(self, coin, size, rate):
         """
         https://docs.ftx.com/#submit-lending-offer
-
         :param coin: the lending coin to query
         :param size: the amount of the request for the lend coin (Cancel for 0)
         :param rate: the rate wanna offer
