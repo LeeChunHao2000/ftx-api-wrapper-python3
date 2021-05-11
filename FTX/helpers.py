@@ -5,8 +5,8 @@ def get_current_timestamp():
     return int(round(_time() * 1_000))
 
 
-def build_query(query=None, **kwargs):
-    query = query or {}
+def build_query(**kwargs):
+    query = {}
     for key, value in kwargs.items():
         if value is not None:
             query[key] = value

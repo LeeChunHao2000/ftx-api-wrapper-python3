@@ -190,10 +190,8 @@ class Client:
                 f"resolution must be in {', '.join(constants.VALID_K_LINE_RESOLUTIONS)}"
             )
 
-        query = {"resolution": resolution}
-
         query = helpers.build_query(
-            query, limit=limit, start_time=start_time, end_time=end_time
+            limit=limit, start_time=start_time, end_time=end_time, resolution=resolution
         )
 
         return self._send_request("public", "GET", f"markets/{pair}/candles", query)
@@ -284,11 +282,8 @@ class Client:
                 f"resolution must be in {', '.join(constants.VALID_K_LINE_RESOLUTIONS)}"
             )
 
-        query = {
-            "limit": limit,
-        }
+        query = helpers.build_query(resolution=resolution, limit=limit, start_time=start_time, end_time=end_time)
 
-        query = helpers.build_query(query, start_time=start_time, end_time=end_time)
         return self._send_request("public", "GET", f"indexes/{index}/candles", query)
 
     # Private API
@@ -365,8 +360,9 @@ class Client:
             if balance["coin"] == coin
         ]
 
-        if balance_coin == []:
+        if not balance_coin:
             return None
+
         return balance_coin[0]
 
     def get_all_balances(self):
@@ -405,20 +401,7 @@ class Client:
         :param end_time: the target period before an Epoch time in seconds
         :return: a list contains deposit history
         """
-
-        query = {
-            "limit": limit,
-        }
-
-        if start_time is not None:
-            query.update(
-                {
-                    "start_time": start_time,
-                }
-            )
-
-        if end_time is not None:
-            query.update({"end_time": end_time})
+        query = helpers.build_query(end_time=end_time, start_time=start_time, limit=limit)
 
         return self._send_request("private", "GET", f"wallet/deposits", query)
 
@@ -433,20 +416,7 @@ class Client:
         :param end_time: the target period before an Epoch time in seconds
         :return: a list contains withdraw history
         """
-
-        query = {
-            "limit": limit,
-        }
-
-        if start_time is not None:
-            query.update(
-                {
-                    "start_time": start_time,
-                }
-            )
-
-        if end_time is not None:
-            query.update({"end_time": end_time})
+        query = helpers.build_query(end_time=end_time, start_time=start_time, limit=limit)
 
         return self._send_request("private", "GET", f"wallet/withdrawals", query)
 
@@ -460,19 +430,7 @@ class Client:
         :return: a list contains airdrop history
         """
 
-        query = {
-            "limit": limit,
-        }
-
-        if start_time is not None:
-            query.update(
-                {
-                    "start_time": start_time,
-                }
-            )
-
-        if end_time is not None:
-            query.update({"end_time": end_time})
+        query = helpers.build_query(end_time=end_time, start_time=start_time, limit=limit)
 
         return self._send_request("private", "GET", f"wallet/airdrops", query)
 
@@ -486,29 +444,15 @@ class Client:
         :return: a list contains all funding payments of perpetual future
         """
 
-        query = {}
-
-        if start_time is not None:
-            query.update(
-                {
-                    "start_time": start_time,
-                }
-            )
-
-        if end_time is not None:
-            query.update(
-                {
-                    "end_time": end_time,
-                }
-            )
+        query = helpers.build_query(end_time=end_time, start_time=start_time)
 
         if coin is not None:
-            query.update({"future": coin.upper() + "-PERP"})
+            query["future"] = f"{coin.upper()}-PERP"
 
         return self._send_request("private", "GET", f"funding_payments", query)
 
     def get_bills(
-        self, pair, limit=20, start_time=None, end_time=None, order=None, _orderId=None
+        self, pair, limit=20, start_time=None, end_time=None, order=None, orderId=None
     ):
         """
         https://docs.ftx.com/#fills
@@ -522,34 +466,8 @@ class Client:
         :return: a list contains all bills
         """
 
-        query = {
-            "market": pair,
-            "limit": limit,
-        }
-
-        if start_time is not None:
-            query.update(
-                {
-                    "start_time": start_time,
-                }
-            )
-
-        if end_time is not None:
-            query.update(
-                {
-                    "end_time": end_time,
-                }
-            )
-
-        if order is not None:
-            query.update(
-                {
-                    "order": order,
-                }
-            )
-
-        if _orderId is not None:
-            query.update({"orderId": _orderId})
+        query = helpers.build_query(limit=limit, start_time=start_time, end_time=end_time, order=order, orderId=orderId)
+        query["market"] = pair
 
         return self._send_request("private", "GET", f"fills", query)
 
@@ -560,10 +478,7 @@ class Client:
         :param pair: the trading pair to query
         :return: a list contains all open orders
         """
-        query = {}
-
-        if pair is not None:
-            query["market"] = pair
+        query = {"market": pair} if pair is not None else {}
 
         return self._send_request("private", "GET", f"orders", query)
 
@@ -579,36 +494,12 @@ class Client:
         :param limit: the records limit to query
         :return: a list contains all history orders
         """
-
-        query = {}
-
-        if pair is not None:
-            query.update(
-                {
-                    "market": pair,
-                }
-            )
-
-        if start_time is not None:
-            query.update(
-                {
-                    "start_time": start_time,
-                }
-            )
-
-        if end_time is not None:
-            query.update(
-                {
-                    "end_time": end_time,
-                }
-            )
-
-        if limit is not None:
-            query.update({"limit": limit})
+        query = helpers.build_query(end_time=end_time, start_time=start_time, limit=limit)
+        query["market"] = pair
 
         return self._send_request("private", "GET", f"orders/history", query)
 
-    def get_open_trigger_orders(self, pair=None, _type=None):
+    def get_open_trigger_orders(self, pair=None, type_=None):
         """
         https://docs.ftx.com/?python#get-open-trigger-orders
 
@@ -620,14 +511,9 @@ class Client:
         query = {}
 
         if pair is not None:
-            query.update(
-                {
-                    "market": pair,
-                }
-            )
-
-        if _type is not None:
-            query.update({"type": _type})
+            query["market"] = pair
+        if type_ is not None:
+            query["type"] = type_
 
         return self._send_request("private", "GET", f"conditional_orders", query)
 
@@ -649,8 +535,8 @@ class Client:
         start_time=None,
         end_time=None,
         side=None,
-        _type=None,
-        _orderType=None,
+        type_=None,
+        orderType=None,
         limit=None,
     ):
         """
@@ -660,58 +546,19 @@ class Client:
         :param start_time: the target period after an Epoch time in seconds
         :param end_time: the target period before an Epoch time in seconds
         :param side: the trading side, should only be buy or sell
-        :param _type: type of trigger order, should only be stop, trailing_stop, or take_profit
-        :param _orderType: the order type, should only be limit or market
+        :param type_: type of trigger order, should only be stop, trailing_stop, or take_profit
+        :param orderType: the order type, should only be limit or market
         :param limit: the records limit to query
         :return: a list contains all history trigger orders
         """
 
-        query = {}
+        query = helpers.build_query(start_time=start_time, end_time=end_time, side=side, orderType=orderType, limit=limit)
 
         if pair is not None:
-            query.update(
-                {
-                    "market": pair,
-                }
-            )
+            query["market"] = pair
+        if type_ is not None:
+            query["type"] = type_
 
-        if start_time is not None:
-            query.update(
-                {
-                    "start_time": start_time,
-                }
-            )
-
-        if end_time is not None:
-            query.update(
-                {
-                    "end_time": end_time,
-                }
-            )
-
-        if side is not None:
-            query.update(
-                {
-                    "side": side,
-                }
-            )
-
-        if _type is not None:
-            query.update(
-                {
-                    "type": _type,
-                }
-            )
-
-        if _orderType is not None:
-            query.update(
-                {
-                    "orderType": _orderType,
-                }
-            )
-
-        if limit is not None:
-            query.update({"limit": limit})
 
         return self._send_request(
             "private", "GET", f"conditional_orders/history", query
@@ -845,7 +692,7 @@ class Client:
         }
 
         if clientId is not None:
-            query.update({"clientId": clientId})
+            query["clientId"] = clientId}
 
         return self._send_request("private", "POST", f"orders", query)
 
@@ -878,23 +725,14 @@ class Client:
             "market": pair,
             "side": side,
             "triggerPrice": triggerPrice,
+            "size": size,
+            "type": _type,
+            "reduceOnly": reduceOnly,
+            "retryUntilFilled": retryUntilFilled,
         }
 
         if orderPrice is not None:
-            query.update(
-                {
-                    "orderPrice": orderPrice,
-                }
-            )
-
-        query.update(
-            {
-                "size": size,
-                "type": _type,
-                "reduceOnly": reduceOnly,
-                "retryUntilFilled": retryUntilFilled,
-            }
-        )
+            query["orderPrice"] = orderPrice
 
         return self._send_request("private", "POST", f"conditional_orders", query)
 
@@ -911,21 +749,7 @@ class Client:
         :param clientId: client order id
         :return a list contains all info after modify the order
         """
-
-        query = {}
-
-        if price is not None:
-            query.update = {
-                "price": price,
-            }
-
-        if size is not None:
-            query.update = {
-                "size": size,
-            }
-
-        if clientId is not None:
-            query.update({"clientId": clientId})
+        query = helpers.build_query(clientId=clientId, size=size, price=price)
 
         return self._send_request("private", "POST", f"orders/{orderId}/modify", query)
 
@@ -945,20 +769,7 @@ class Client:
         :return a list contains all info after modify the order
         """
 
-        query = {}
-
-        if price is not None:
-            query.update = {
-                "price": price,
-            }
-
-        if size is not None:
-            query.update = {
-                "size": size,
-            }
-
-        if clientId is not None:
-            query.update({"clientId": clientId})
+        query = helpers.build_query(clientId=clientId, size=size, price=price)
 
         return self._send_request(
             "private", "POST", f"orders/by_client_id/{clientOrderId}/modify", query
@@ -982,13 +793,13 @@ class Client:
         :return a list contains all info after modify the trigger order
         """
 
-        if _type == "stop" or _type == "takeProfit":
+        if _type in ("stop", "takeProfit"):
             query = {
                 "size": size,
                 "triggerPrice": triggerPrice,
             }
             if orderPrice is not None:
-                query.update({"orderPrice": orderPrice})
+                query["orderPrice"] = orderPrice
         else:
             query = {"size": size, "trailValue": trailValue}
 
@@ -1039,17 +850,13 @@ class Client:
         :param limitOrdersOnly: default False.
         :return a list contains result
         """
+        query = {
+            "conditionalOrdersOnly": conditionalOrdersOnly,
+            "limitOrdersOnly": limitOrdersOnly,
+        }
+
         if pair is not None:
-            query = {
-                "market": pair,
-                "conditionalOrdersOnly": conditionalOrdersOnly,
-                "limitOrdersOnly": limitOrdersOnly,
-            }
-        else:
-            query = {
-                "conditionalOrdersOnly": conditionalOrdersOnly,
-                "limitOrdersOnly": limitOrdersOnly,
-            }
+            query['market'] = pair
 
         return self._send_request("private", "DELETE", f"orders", query)
 
