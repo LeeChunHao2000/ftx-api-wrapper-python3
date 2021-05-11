@@ -93,9 +93,12 @@ class Client:
         else:
             return url
 
-    def _send_request(self, scope, method, endpoint, query=None):
-        if query is None:
-            query = {}
+    def _send_request(self, method, endpoint, query=None):
+        query = query or {}
+
+        scope = "public"
+        if any(endpoint.startswith(substr) for substr in constants.PRIVATE_ENDPOINTS):
+            scope = "private"
 
         # Build header first
         headers = self._build_headers(scope, method, endpoint, query)
@@ -120,19 +123,28 @@ class Client:
         else:
             return response
 
+    def _GET(self, endpoint, query=None):
+        return self._send_request("GET", endpoint, query)
+
+    def _POST(self, endpoint, query=None):
+        return self._send_request("POST", endpoint, query)
+
+    def _DELETE(self, endpoint, query=None):
+        return self._send_request("DELETE", endpoint, query)
+
     # Public API
     def get_markets(self) -> ListOfDicts:
         """
         https://docs.ftx.com/#markets
         """
-        return self._send_request("public", "GET", "markets")
+        return self._GET("markets")
 
     def get_market(self, pair: str) -> Optional[dict]:
         """
         https://docs.ftx.com/#get-single-market
         :param pair: the trading pair to query
         """
-        return self._send_request("public", "GET", f"markets/{pair.upper()}")
+        return self._GET(f"markets/{pair.upper()}")
 
     def get_orderbook(self, pair: str, depth=20) -> BidsAndAsks:
         """
@@ -145,9 +157,7 @@ class Client:
         if depth > 100 or depth < 20:
             raise Invalid("depth must be between 20 and 100")
 
-        return self._send_request(
-            "public", "GET", f"markets/{pair}/orderbook", {"depth": depth}
-        )
+        return self._GET(f"markets/{pair}/orderbook", {"depth": depth})
 
     def get_recent_trades(
         self, pair, limit=constants.DEFAULT_LIMIT, start_time=None, end_time=None
@@ -165,7 +175,7 @@ class Client:
             limit=limit, start_time=start_time, end_time=end_time
         )
 
-        return self._send_request("public", "GET", f"markets/{pair}/trades", query)
+        return self._GET(f"markets/{pair}/trades", query)
 
     def get_k_line(
         self,
@@ -194,7 +204,7 @@ class Client:
             limit=limit, start_time=start_time, end_time=end_time, resolution=resolution
         )
 
-        return self._send_request("public", "GET", f"markets/{pair}/candles", query)
+        return self._GET(f"markets/{pair}/candles", query)
 
     def get_futures(self) -> ListOfDicts:
         """
@@ -203,7 +213,7 @@ class Client:
         :return: a list contains all available futures
         """
 
-        return self._send_request("public", "GET", f"/futures")
+        return self._GET(f"/futures")
 
     def get_perpetual_futures(self) -> ListOfDicts:
         """
@@ -223,7 +233,7 @@ class Client:
         :return: a list contains single future info
         """
 
-        return self._send_request("public", "GET", f"futures/{pair.upper()}")
+        return self._GET(f"futures/{pair.upper()}")
 
     def get_future_stats(self, pair):
         """
@@ -233,7 +243,7 @@ class Client:
         :return: a list contains stats of a future
         """
 
-        return self._send_request("public", "GET", f"futures/{pair.upper()}/stats")
+        return self._GET(f"futures/{pair.upper()}/stats")
 
     def get_funding_rates(self):
         """
@@ -242,7 +252,7 @@ class Client:
         :return: a list contains all funding rate of perpetual futures
         """
 
-        return self._send_request("public", "GET", f"funding_rates")
+        return self._GET(f"funding_rates")
 
     # TODO: Note that this only applies to index futures, e.g. ALT/MID/SHIT/EXCH/DRAGON.
     def get_etf_future_index(self, index):
@@ -253,7 +263,7 @@ class Client:
         :return: a list contains all component coins in ETF Future
         """
 
-        return self._send_request("public", "GET", f"indexes/{index}/weights")
+        return self._GET(f"indexes/{index}/weights")
 
     def get_expired_futures(self):
         """
@@ -262,10 +272,15 @@ class Client:
         :return: a list contains all expired futures
         """
 
-        return self._send_request("public", "GET", f"expired_futures")
+        return self._GET(f"expired_futures")
 
     def get_index_k_line(
-        self, index, resolution=constants.DEFAULT_K_LINE_RESOLUTION, limit=20, start_time=None, end_time=None
+        self,
+        index,
+        resolution=constants.DEFAULT_K_LINE_RESOLUTION,
+        limit=20,
+        start_time=None,
+        end_time=None,
     ):
         """
         https://docs.ftx.com/#get-historical-index
@@ -282,9 +297,11 @@ class Client:
                 f"resolution must be in {', '.join(constants.VALID_K_LINE_RESOLUTIONS)}"
             )
 
-        query = helpers.build_query(resolution=resolution, limit=limit, start_time=start_time, end_time=end_time)
+        query = helpers.build_query(
+            resolution=resolution, limit=limit, start_time=start_time, end_time=end_time
+        )
 
-        return self._send_request("public", "GET", f"indexes/{index}/candles", query)
+        return self._GET(f"indexes/{index}/candles", query)
 
     # Private API
 
@@ -295,7 +312,7 @@ class Client:
         :return: a dict contains all personal profile and positions information
         """
 
-        return self._send_request("private", "GET", f"account")
+        return self._GET(f"account")
 
     def get_positions(self, showAvgPrice=False):
         """
@@ -305,9 +322,7 @@ class Client:
         :return: a dict contains all positions
         """
 
-        return self._send_request(
-            "private", "GET", f"positions", {"showAvgPrice": showAvgPrice}
-        )
+        return self._GET(f"positions", {"showAvgPrice": showAvgPrice})
 
     def get_subaccounts(self):
         """
@@ -316,7 +331,7 @@ class Client:
         :return: a list contains all subaccounts
         """
 
-        return self._send_request("private", "GET", f"subaccounts")
+        return self._GET(f"subaccounts")
 
     def get_subaccount_balances(self, name):
         """
@@ -326,7 +341,7 @@ class Client:
         :return: a list contains subaccount balances
         """
 
-        return self._send_request("private", "GET", f"subaccounts/{name}/balances")
+        return self._GET(f"subaccounts/{name}/balances")
 
     def get_wallet_coins(self):
         """
@@ -335,7 +350,7 @@ class Client:
         :return: a list contains all coins in wallet
         """
 
-        return self._send_request("private", "GET", f"wallet/coins")
+        return self._GET(f"wallet/coins")
 
     def get_balances(self):
         """
@@ -344,7 +359,7 @@ class Client:
         :return: a list contains current account balances
         """
 
-        return self._send_request("private", "GET", f"wallet/balances")
+        return self._GET(f"wallet/balances")
 
     def get_balance(self, coin):
         """
@@ -372,7 +387,7 @@ class Client:
         :return: a list contains all accounts balances
         """
 
-        return self._send_request("private", "GET", f"wallet/all_balances")
+        return self._GET(f"wallet/all_balances")
 
     def get_deposit_address(self, coin, chain):
         """
@@ -383,16 +398,12 @@ class Client:
         :return: a list contains deposit address
         """
 
-        return self._send_request(
-            "private",
-            "GET",
+        return self._GET(
             f"wallet/deposit_address/{coin.upper()}",
             {"method": chain},
         )
 
-    def get_deposit_history(
-        self, limit=20, start_time=None, end_time=None
-    ):
+    def get_deposit_history(self, limit=20, start_time=None, end_time=None):
         """
         https://docs.ftx.com/#get-deposit-history
 
@@ -401,13 +412,13 @@ class Client:
         :param end_time: the target period before an Epoch time in seconds
         :return: a list contains deposit history
         """
-        query = helpers.build_query(end_time=end_time, start_time=start_time, limit=limit)
+        query = helpers.build_query(
+            end_time=end_time, start_time=start_time, limit=limit
+        )
 
-        return self._send_request("private", "GET", f"wallet/deposits", query)
+        return self._GET(f"wallet/deposits", query)
 
-    def get_withdrawal_history(
-        self, limit=20, start_time=None, end_time=None
-    ):
+    def get_withdrawal_history(self, limit=20, start_time=None, end_time=None):
         """
         https://docs.ftx.com/#get-withdrawal-history
 
@@ -416,9 +427,11 @@ class Client:
         :param end_time: the target period before an Epoch time in seconds
         :return: a list contains withdraw history
         """
-        query = helpers.build_query(end_time=end_time, start_time=start_time, limit=limit)
+        query = helpers.build_query(
+            end_time=end_time, start_time=start_time, limit=limit
+        )
 
-        return self._send_request("private", "GET", f"wallet/withdrawals", query)
+        return self._GET(f"wallet/withdrawals", query)
 
     def get_wallet_airdrops(self, limit=20, start_time=None, end_time=None):
         """
@@ -430,9 +443,11 @@ class Client:
         :return: a list contains airdrop history
         """
 
-        query = helpers.build_query(end_time=end_time, start_time=start_time, limit=limit)
+        query = helpers.build_query(
+            end_time=end_time, start_time=start_time, limit=limit
+        )
 
-        return self._send_request("private", "GET", f"wallet/airdrops", query)
+        return self._GET(f"wallet/airdrops", query)
 
     def get_funding_payments(self, coin=None, start_time=None, end_time=None):
         """
@@ -449,7 +464,7 @@ class Client:
         if coin is not None:
             query["future"] = f"{coin.upper()}-PERP"
 
-        return self._send_request("private", "GET", f"funding_payments", query)
+        return self._GET(f"funding_payments", query)
 
     def get_bills(
         self, pair, limit=20, start_time=None, end_time=None, order=None, orderId=None
@@ -466,10 +481,16 @@ class Client:
         :return: a list contains all bills
         """
 
-        query = helpers.build_query(limit=limit, start_time=start_time, end_time=end_time, order=order, orderId=orderId)
+        query = helpers.build_query(
+            limit=limit,
+            start_time=start_time,
+            end_time=end_time,
+            order=order,
+            orderId=orderId,
+        )
         query["market"] = pair
 
-        return self._send_request("private", "GET", f"fills", query)
+        return self._GET(f"fills", query)
 
     def get_open_orders(self, pair=None):
         """
@@ -480,11 +501,9 @@ class Client:
         """
         query = {"market": pair} if pair is not None else {}
 
-        return self._send_request("private", "GET", f"orders", query)
+        return self._GET(f"orders", query)
 
-    def get_order_history(
-        self, pair=None, start_time=None, end_time=None, limit=None
-    ):
+    def get_order_history(self, pair=None, start_time=None, end_time=None, limit=None):
         """
         https://docs.ftx.com/?python#get-order-history
 
@@ -494,10 +513,12 @@ class Client:
         :param limit: the records limit to query
         :return: a list contains all history orders
         """
-        query = helpers.build_query(end_time=end_time, start_time=start_time, limit=limit)
+        query = helpers.build_query(
+            end_time=end_time, start_time=start_time, limit=limit
+        )
         query["market"] = pair
 
-        return self._send_request("private", "GET", f"orders/history", query)
+        return self._GET(f"orders/history", query)
 
     def get_open_trigger_orders(self, pair=None, type_=None):
         """
@@ -515,7 +536,7 @@ class Client:
         if type_ is not None:
             query["type"] = type_
 
-        return self._send_request("private", "GET", f"conditional_orders", query)
+        return self._GET(f"conditional_orders", query)
 
     def get_trigger_order_triggers(self, _orderId):
         """
@@ -525,9 +546,7 @@ class Client:
         :return: a list contains trigger order triggers
         """
 
-        return self._send_request(
-            "private", "GET", f"conditional_orders/{_orderId}/triggers"
-        )
+        return self._GET(f"conditional_orders/{_orderId}/triggers")
 
     def get_trigger_order_history(
         self,
@@ -552,17 +571,20 @@ class Client:
         :return: a list contains all history trigger orders
         """
 
-        query = helpers.build_query(start_time=start_time, end_time=end_time, side=side, orderType=orderType, limit=limit)
+        query = helpers.build_query(
+            start_time=start_time,
+            end_time=end_time,
+            side=side,
+            orderType=orderType,
+            limit=limit,
+        )
 
         if pair is not None:
             query["market"] = pair
         if type_ is not None:
             query["type"] = type_
 
-
-        return self._send_request(
-            "private", "GET", f"conditional_orders/history", query
-        )
+        return self._GET(f"conditional_orders/history", query)
 
     def get_order_status(self, orderId):
         """
@@ -572,7 +594,7 @@ class Client:
         :return a list contains status of the order
         """
 
-        return self._send_request("private", "GET", f"orders/{orderId}")
+        return self._GET(f"orders/{orderId}")
 
     def get_order_status_by_clientId(self, clientId):
         """
@@ -582,7 +604,7 @@ class Client:
         :return a list contains status of the order
         """
 
-        return self._send_request("private", "GET", f"orders/by_client_id/{clientId}")
+        return self._GET(f"orders/by_client_id/{clientId}")
 
     # Private API (Write)
     def create_subaccount(self, name):
@@ -593,7 +615,7 @@ class Client:
         :return: a list contains new subaccount info
         """
 
-        return self._send_request("private", "POST", f"subaccounts", {"nickname": name})
+        return self._POST(f"subaccounts", {"nickname": name})
 
     def change_subaccount_name(self, name, newname):
         """
@@ -606,7 +628,7 @@ class Client:
 
         query = {"nickname": name, "newNickname": newname}
 
-        return self._send_request("private", "POST", f"subaccounts/update_name", query)
+        return self._POST(f"subaccounts/update_name", query)
 
     def delete_subaccount(self, name):
         """
@@ -616,9 +638,7 @@ class Client:
         :return: a list contains status
         """
 
-        return self._send_request(
-            "private", "DELETE", f"subaccounts", {"nickname": name}
-        )
+        return self._DELETE(f"subaccounts", {"nickname": name})
 
     # TODO: Endpoint Error > Not allowed with internal-transfers-disabled permissions
     def transfer_balances(self, coin, size, source, destination):
@@ -639,7 +659,7 @@ class Client:
             "destination": destination,
         }
 
-        return self._send_request("private", "POST", f"subaccounts/transfer", query)
+        return self._POST(f"subaccounts/transfer", query)
 
     def change_account_leverage(self, leverage):
         """
@@ -649,9 +669,7 @@ class Client:
         :return: a list contains status
         """
 
-        return self._send_request(
-            "private", "POST", f"account/leverage", {"leverage": leverage}
-        )
+        return self._POST(f"account/leverage", {"leverage": leverage})
 
     def create_order(
         self,
@@ -692,9 +710,9 @@ class Client:
         }
 
         if clientId is not None:
-            query["clientId"] = clientId}
+            query["clientId"] = clientId
 
-        return self._send_request("private", "POST", f"orders", query)
+        return self._POST(f"orders", query)
 
     def create_trigger_order(
         self,
@@ -734,7 +752,7 @@ class Client:
         if orderPrice is not None:
             query["orderPrice"] = orderPrice
 
-        return self._send_request("private", "POST", f"conditional_orders", query)
+        return self._POST(f"conditional_orders", query)
 
     # TODO: Either price or size must be specified
     def modify_order(self, orderId, price=None, size=None, clientId=None):
@@ -751,7 +769,7 @@ class Client:
         """
         query = helpers.build_query(clientId=clientId, size=size, price=price)
 
-        return self._send_request("private", "POST", f"orders/{orderId}/modify", query)
+        return self._POST(f"orders/{orderId}/modify", query)
 
     # TODO: Either price or size must be specified
     def modify_order_by_clientId(
@@ -771,9 +789,7 @@ class Client:
 
         query = helpers.build_query(clientId=clientId, size=size, price=price)
 
-        return self._send_request(
-            "private", "POST", f"orders/by_client_id/{clientOrderId}/modify", query
-        )
+        return self._POST(f"orders/by_client_id/{clientOrderId}/modify", query)
 
     def modify_trigger_order(
         self, orderId, _type, size, triggerPrice=None, orderPrice=None, trailValue=None
@@ -803,9 +819,7 @@ class Client:
         else:
             query = {"size": size, "trailValue": trailValue}
 
-        return self._send_request(
-            "private", "POST", f"conditional_orders/{orderId}/modify", query
-        )
+        return self._POST(f"conditional_orders/{orderId}/modify", query)
 
     def cancel_order(self, orderId):
         """
@@ -815,7 +829,7 @@ class Client:
         :return a list contains result
         """
 
-        return self._send_request("private", "DELETE", f"orders/{orderId}")
+        return self._DELETE(f"orders/{orderId}")
 
     def cancel_order_by_clientID(self, clientId):
         """
@@ -825,9 +839,7 @@ class Client:
         :return a list contains result
         """
 
-        return self._send_request(
-            "private", "DELETE", f"orders/by_client_id/{clientId}"
-        )
+        return self._DELETE(f"orders/by_client_id/{clientId}")
 
     def cancel_trigger_order(self, orderId):
         """
@@ -837,7 +849,7 @@ class Client:
         :return a list contains result
         """
 
-        return self._send_request("private", "DELETE", f"conditional_orders/{orderId}")
+        return self._DELETE(f"conditional_orders/{orderId}")
 
     def cancel_all_orders(
         self, pair=None, conditionalOrdersOnly=False, limitOrdersOnly=False
@@ -856,9 +868,9 @@ class Client:
         }
 
         if pair is not None:
-            query['market'] = pair
+            query["market"] = pair
 
-        return self._send_request("private", "DELETE", f"orders", query)
+        return self._DELETE(f"orders", query)
 
     # SRM Stake
 
@@ -869,7 +881,7 @@ class Client:
         :return a list contains srm stake history
         """
 
-        return self._send_request("private", "GET", f"srm_stakes/stakes")
+        return self._GET(f"srm_stakes/stakes")
 
     def get_srm_unstake_history(self):
         """
@@ -878,7 +890,7 @@ class Client:
         :return a list contains srm unstake history
         """
 
-        return self._send_request("private", "GET", f"srm_stakes/unstake_requests")
+        return self._GET(f"srm_stakes/unstake_requests")
 
     def get_srm_stake_balances(self):
         """
@@ -887,7 +899,7 @@ class Client:
         :return a list contains actively staked, scheduled for unstaking and lifetime rewards balances
         """
 
-        return self._send_request("private", "GET", f"srm_stakes/balances")
+        return self._GET(f"srm_stakes/balances")
 
     def get_srm_stake_rewards_history(self):
         """
@@ -896,7 +908,7 @@ class Client:
         :return a list contains srm staking rewards
         """
 
-        return self._send_request("private", "GET", f"srm_stakes/staking_rewards")
+        return self._GET(f"srm_stakes/staking_rewards")
 
     def srm_unstake(self, coin, size):
         """
@@ -909,9 +921,7 @@ class Client:
 
         query = {"coin": coin, "size": size}
 
-        return self._send_request(
-            "private", "POST", f"srm_stakes/unstake_requests", query
-        )
+        return self._POST(f"srm_stakes/unstake_requests", query)
 
     def cancel_srm_unstake(self, stakeId):
         """
@@ -921,9 +931,7 @@ class Client:
         :return a list contains result
         """
 
-        return self._send_request(
-            "private", "DELETE", f"srm_stakes/unstake_requests/{stakeId}"
-        )
+        return self._DELETE(f"srm_stakes/unstake_requests/{stakeId}")
 
     def srm_stake(self, coin, size):
         """
@@ -936,7 +944,7 @@ class Client:
 
         query = {"coin": coin, "size": size}
 
-        return self._send_request("private", "POST", f"srm_stakes/stakes", query)
+        return self._POST(f"srm_stakes/stakes", query)
 
     def get_margin_lending_rates(self):
         """
@@ -944,7 +952,7 @@ class Client:
         :return a list contains lending rates (include estimate rates and previous rates)
         """
 
-        return self._send_request("private", "GET", f"spot_margin/lending_rates")
+        return self._GET(f"spot_margin/lending_rates")
 
     def set_margin_lending_offer(self, coin, size, rate):
         """
@@ -957,4 +965,4 @@ class Client:
 
         query = {"coin": coin, "size": size, "rate": rate}
 
-        return self._send_request("private", "POST", f"spot_margin/offers", query)
+        return self._POST(f"spot_margin/offers", query)
