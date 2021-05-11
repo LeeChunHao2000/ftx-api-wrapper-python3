@@ -2,11 +2,30 @@ import hashlib
 import hmac
 import json
 import requests
+from typing import List, NewType, Optional, Dict
 import urllib
 from urllib.parse import urlencode
 
-from .constants import *
-from .helpers import *
+from . import constants
+from . import helpers
+
+
+ListOfDicts = NewType('ListOfDicts', List[dict])
+# shape:
+#   {'bids': [[2259.5, 0.0013],
+#             ...],
+#    'asks': [[2299.5, 1.8906],
+#             ...],
+#   }
+BidsAndAsks = NewType('BidsAndAsks', Dict[str, List[List[float]]])
+
+
+class Invalid(Exception):
+    pass
+
+
+class DoesntExist(Exception):
+    pass
 
 
 class Client(object):
@@ -28,9 +47,9 @@ class Client(object):
         }
 
         if scope.lower() == 'private':
-            nonce = str(get_current_timestamp())
+            nonce = str(helpers.get_current_timestamp())
             payload = f'{nonce}{method.upper()}{endpoint}'
-            if method is 'GET' and query:
+            if method == 'GET' and query:
                 payload += '?' + urlencode(query)
             elif query:
                 payload += json.dumps(query)
@@ -58,9 +77,9 @@ class Client(object):
             query = {}
 
         if scope.lower() == 'private':
-            url = f"{PRIVATE_API_URL}/{endpoint}"
+            url = f"{constants.PRIVATE_API_URL}/{endpoint}"
         else:
-            url = f"{PUBLIC_API_URL}/{endpoint}"
+            url = f"{constants.PUBLIC_API_URL}/{endpoint}"
 
         if method == 'GET':
             return f"{url}?{urlencode(query, True, '/[]')}" if len(query) > 0 else url
@@ -91,30 +110,26 @@ class Client(object):
 
         if 'result' in response:
             return response['result']
+        elif 'error' in response:
+            raise DoesntExist(response['error'])
         else:
             return response
 
     # Public API
-    def get_public_all_markets(self):
+    def get_markets(self) -> ListOfDicts:
         """
         https://docs.ftx.com/#markets
-
-        :return: a list contains all available markets
         """
+        return self._send_request('public', 'GET', "markets")
 
-        return self._send_request('public', 'GET', f"markets")
-
-    def get_public_single_market(self, pair):
+    def get_market(self, pair: str) -> Optional[dict]:
         """
         https://docs.ftx.com/#get-single-market
-
         :param pair: the trading pair to query
-        :return: a list contains single market info
         """
-
         return self._send_request('public', 'GET', f"markets/{pair.upper()}")
 
-    def get_public_orderbook(self, pair, depth=20):
+    def get_orderbook(self, pair: str, depth=20) -> BidsAndAsks:
         """
         https://docs.ftx.com/#get-orderbook
 
@@ -122,10 +137,12 @@ class Client(object):
         :param depth: the price levels depth to query (max: 100 default: 20)
         :return: a dict contains asks and bids data
         """
+        if depth > 100 or depth < 20:
+            raise Invalid("depth must be between 20 and 100")
 
         return self._send_request('public', 'GET', f"markets/{pair}/orderbook", {'depth': depth})
 
-    def get_public_recent_trades(self, pair, limit=20, start_time=None, end_time=None):
+    def get_recent_trades(self, pair, limit=constants.DEFAULT_LIMIT, start_time=None, end_time=None) -> ListOfDicts:
         """
         https://docs.ftx.com/#get-trades
 
@@ -135,17 +152,19 @@ class Client(object):
         :param end_time: the target period before an Epoch time in seconds
         :return: a list contains all completed orders in exchange
         """
+        query = {}
 
-        query = {
+        if limit is not None:
+            query.update({
             'limit': limit,
-        }
+        })
 
-        if start_time != None:
+        if start_time is not None:
             query.update({
                 'start_time': start_time,
             })
 
-        if end_time != None:
+        if end_time is not None:
             query.update({
                 'end_time': end_time
             })
@@ -169,12 +188,12 @@ class Client(object):
             'limit': limit,
         }
 
-        if start_time != None:
+        if start_time is not None:
             query.update({
                 'start_time': start_time,
             })
 
-        if end_time != None:
+        if end_time is not None:
             query.update({
                 'end_time': end_time
             })
@@ -269,12 +288,12 @@ class Client(object):
             'limit': limit,
         }
 
-        if start_time != None:
+        if start_time is not None:
             query.update({
                 'start_time': start_time,
             })
 
-        if end_time != None:
+        if end_time is not None:
             query.update({
                 'end_time': end_time
             })
@@ -388,12 +407,12 @@ class Client(object):
             'limit': limit,
         }
 
-        if start_time != None:
+        if start_time is not None:
             query.update({
                 'start_time': start_time,
             })
 
-        if end_time != None:
+        if end_time is not None:
             query.update({
                 'end_time': end_time
             })
@@ -414,12 +433,12 @@ class Client(object):
             'limit': limit,
         }
 
-        if start_time != None:
+        if start_time is not None:
             query.update({
                 'start_time': start_time,
             })
 
-        if end_time != None:
+        if end_time is not None:
             query.update({
                 'end_time': end_time
             })
@@ -440,12 +459,12 @@ class Client(object):
             'limit': limit,
         }
 
-        if start_time != None:
+        if start_time is not None:
             query.update({
                 'start_time': start_time,
             })
 
-        if end_time != None:
+        if end_time is not None:
             query.update({
                 'end_time': end_time
             })
@@ -464,17 +483,17 @@ class Client(object):
 
         query = {}
 
-        if start_time != None:
+        if start_time is not None:
             query.update({
                 'start_time': start_time,
             })
 
-        if end_time != None:
+        if end_time is not None:
             query.update({
                 'end_time': end_time,
             })
 
-        if coin != None:
+        if coin is not None:
             query.update({
                 'future': coin.upper() + '-PERP'
             })
@@ -499,22 +518,22 @@ class Client(object):
             'limit': limit,
         }
 
-        if start_time != None:
+        if start_time is not None:
             query.update({
                 'start_time': start_time,
             })
 
-        if end_time != None:
+        if end_time is not None:
             query.update({
                 'end_time': end_time,
             })
 
-        if order != None:
+        if order is not None:
             query.update({
                 'order': order,
             })
 
-        if _orderId != None:
+        if _orderId is not None:
             query.update({
                 'orderId': _orderId
             })
@@ -548,22 +567,22 @@ class Client(object):
 
         query = {}
 
-        if pair != None:
+        if pair is not None:
             query.update({
                 'market': pair,
             })
 
-        if start_time != None:
+        if start_time is not None:
             query.update({
                 'start_time': start_time,
             })
 
-        if end_time != None:
+        if end_time is not None:
             query.update({
                 'end_time': end_time,
             })
 
-        if limit != None:
+        if limit is not None:
             query.update({
                 'limit': limit
             })
@@ -581,12 +600,12 @@ class Client(object):
 
         query = {}
 
-        if pair != None:
+        if pair is not None:
             query.update({
                 'market': pair,
             })
 
-        if _type != None:
+        if _type is not None:
             query.update({
                 'type': _type
             })
@@ -620,37 +639,37 @@ class Client(object):
 
         query = {}
 
-        if pair != None:
+        if pair is not None:
             query.update({
                 'market': pair,
             })
 
-        if start_time != None:
+        if start_time is not None:
             query.update({
                 'start_time': start_time,
             })
 
-        if end_time != None:
+        if end_time is not None:
             query.update({
                 'end_time': end_time,
             })
 
-        if side != None:
+        if side is not None:
             query.update({
                 'side': side,
             })
 
-        if _type != None:
+        if _type is not None:
             query.update({
                 'type': _type,
             })
 
-        if _orderType != None:
+        if _orderType is not None:
             query.update({
                 'orderType': _orderType,
             })
 
-        if limit != None:
+        if limit is not None:
             query.update({
                 'limit': limit
             })
@@ -773,7 +792,7 @@ class Client(object):
             'postOnly': postOnly,
         }
 
-        if clientId != None:
+        if clientId is not None:
             query.update({
                 'clientId': clientId
             })
@@ -802,7 +821,7 @@ class Client(object):
             'triggerPrice': triggerPrice,
         }
 
-        if orderPrice != None:
+        if orderPrice is not None:
             query.update({
                 'orderPrice': orderPrice,
             })
@@ -832,17 +851,17 @@ class Client(object):
 
         query = {}
 
-        if price != None:
+        if price is not None:
             query.update = ({
                 'price': price,
             })
 
-        if size != None:
+        if size is not None:
             query.update = ({
                 'size': size,
             })
 
-        if clientId != None:
+        if clientId is not None:
             query.update({
                 'clientId': clientId
             })
@@ -865,17 +884,17 @@ class Client(object):
 
         query = {}
 
-        if price != None:
+        if price is not None:
             query.update = ({
                 'price': price,
             })
 
-        if size != None:
+        if size is not None:
             query.update = ({
                 'size': size,
             })
 
-        if clientId != None:
+        if clientId is not None:
             query.update({
                 'clientId': clientId
             })
@@ -898,7 +917,7 @@ class Client(object):
         :return a list contains all info after modify the trigger order
         """
 
-        if _type is 'stop' or _type is 'takeProfit':
+        if _type == 'stop' or _type == 'takeProfit':
             query = {
                 'size': size,
                 'triggerPrice': triggerPrice,
