@@ -171,7 +171,7 @@ class Client:
 
         return self._send_request('public', 'GET', f"markets/{pair}/trades", query)
 
-    def get_public_k_line(self, pair, resolution=14400, limit=20, start_time=None, end_time=None):
+    def get_k_line(self, pair, resolution=constants.DEFAULT_K_LINE_RESOLUTION, limit=constants.DEFAULT_LIMIT, start_time=None, end_time=None) -> ListOfDicts:
         """
         https://docs.ftx.com/#get-historical-prices
 
@@ -182,11 +182,17 @@ class Client:
         :param end_time: the target period before an Epoch time in seconds
         :return: a list contains all OHLC prices in exchange
         """
+        if resolution not in constants.VALID_K_LINE_RESOLUTIONS:
+            raise Invalid(f"resolution must be in {', '.join(constants.VALID_K_LINE_RESOLUTIONS)}")
 
         query = {
             'resolution': resolution,
-            'limit': limit,
         }
+
+        if limit is not None:
+            query.update({
+            'limit': limit,
+        })
 
         if start_time is not None:
             query.update({
@@ -200,7 +206,7 @@ class Client:
 
         return self._send_request('public', 'GET', f"markets/{pair}/candles", query)
 
-    def get_public_all_futures(self):
+    def get_public_all_futures(self) -> ListOfDicts:
         """
         https://docs.ftx.com/#list-all-futures
 
@@ -209,18 +215,13 @@ class Client:
 
         return self._send_request('public', 'GET', f"/futures")
 
-    def get_public_all_perpetual_futures(self):
+    def get_public_all_perpetual_futures(self) -> ListOfDicts:
         """
         https://docs.ftx.com/#list-all-futures
 
         :return: a list contains all available perpetual futures
         """
-        response = []
-        for perpetual in self.get_public_all_futures():
-            if perpetual['perpetual'] is True:
-                response.append(perpetual)
-
-        return response
+        return [future for future in self.get_public_all_futures() if future['perpetual']]
 
     def get_public_single_future(self, pair):
         """
