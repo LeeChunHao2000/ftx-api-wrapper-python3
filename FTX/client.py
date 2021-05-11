@@ -198,7 +198,7 @@ class Client:
 
         return self._send_request("public", "GET", f"markets/{pair}/candles", query)
 
-    def get_public_all_futures(self) -> ListOfDicts:
+    def get_futures(self) -> ListOfDicts:
         """
         https://docs.ftx.com/#list-all-futures
 
@@ -207,7 +207,7 @@ class Client:
 
         return self._send_request("public", "GET", f"/futures")
 
-    def get_public_all_perpetual_futures(self) -> ListOfDicts:
+    def get_perpetual_futures(self) -> ListOfDicts:
         """
         https://docs.ftx.com/#list-all-futures
 
@@ -217,7 +217,7 @@ class Client:
             future for future in self.get_public_all_futures() if future["perpetual"]
         ]
 
-    def get_public_single_future(self, pair):
+    def get_future(self, pair):
         """
         https://docs.ftx.com/#get-future
 
@@ -227,7 +227,7 @@ class Client:
 
         return self._send_request("public", "GET", f"futures/{pair.upper()}")
 
-    def get_public_future_stats(self, pair):
+    def get_future_stats(self, pair):
         """
         https://docs.ftx.com/#get-future-stats
 
@@ -237,7 +237,7 @@ class Client:
 
         return self._send_request("public", "GET", f"futures/{pair.upper()}/stats")
 
-    def get_public_all_funding_rates(self):
+    def get_funding_rates(self):
         """
         https://docs.ftx.com/#get-funding-rates
 
@@ -247,7 +247,7 @@ class Client:
         return self._send_request("public", "GET", f"funding_rates")
 
     # TODO: Note that this only applies to index futures, e.g. ALT/MID/SHIT/EXCH/DRAGON.
-    def get_public_etf_future_index(self, index):
+    def get_etf_future_index(self, index):
         """
         https://docs.ftx.com/#get-index-weights
 
@@ -257,7 +257,7 @@ class Client:
 
         return self._send_request("public", "GET", f"indexes/{index}/weights")
 
-    def get_public_all_expired_futures(self):
+    def get_expired_futures(self):
         """
         https://docs.ftx.com/#get-expired-futures
 
@@ -266,8 +266,8 @@ class Client:
 
         return self._send_request("public", "GET", f"expired_futures")
 
-    def get_public_index_k_line(
-        self, index, resolution=14400, limit=20, start_time=None, end_time=None
+    def get_index_k_line(
+        self, index, resolution=constants.DEFAULT_K_LINE_RESOLUTION, limit=20, start_time=None, end_time=None
     ):
         """
         https://docs.ftx.com/#get-historical-index
@@ -279,27 +279,21 @@ class Client:
         :param end_time: the target period before an Epoch time in seconds
         :return: a list contains all OHLC prices of etf index in exchange
         """
+        if resolution not in constants.VALID_K_LINE_RESOLUTIONS:
+            raise Invalid(
+                f"resolution must be in {', '.join(constants.VALID_K_LINE_RESOLUTIONS)}"
+            )
 
         query = {
-            "resolution": resolution,
             "limit": limit,
         }
 
-        if start_time is not None:
-            query.update(
-                {
-                    "start_time": start_time,
-                }
-            )
-
-        if end_time is not None:
-            query.update({"end_time": end_time})
-
+        query = helpers.build_query(query, start_time=start_time, end_time=end_time)
         return self._send_request("public", "GET", f"indexes/{index}/candles", query)
 
     # Private API
 
-    def get_private_account_information(self):
+    def get_account_info(self):
         """
         https://docs.ftx.com/#get-account-information
 
@@ -308,7 +302,7 @@ class Client:
 
         return self._send_request("private", "GET", f"account")
 
-    def get_private_account_positions(self, showAvgPrice=False):
+    def get_positions(self, showAvgPrice=False):
         """
         https://docs.ftx.com/#get-positions
 
@@ -320,7 +314,7 @@ class Client:
             "private", "GET", f"positions", {"showAvgPrice": showAvgPrice}
         )
 
-    def get_private_all_subaccounts(self):
+    def get_subaccounts(self):
         """
         https://docs.ftx.com/#get-all-subaccounts
 
@@ -329,7 +323,7 @@ class Client:
 
         return self._send_request("private", "GET", f"subaccounts")
 
-    def get_private_subaccount_balances(self, name):
+    def get_subaccount_balances(self, name):
         """
         https://docs.ftx.com/#get-subaccount-balances
 
@@ -339,7 +333,7 @@ class Client:
 
         return self._send_request("private", "GET", f"subaccounts/{name}/balances")
 
-    def get_private_wallet_coins(self):
+    def get_wallet_coins(self):
         """
         https://docs.ftx.com/#get-coins
 
@@ -348,7 +342,7 @@ class Client:
 
         return self._send_request("private", "GET", f"wallet/coins")
 
-    def get_private_wallet_balances(self):
+    def get_balances(self):
         """
         https://docs.ftx.com/#get-balances
 
@@ -357,7 +351,7 @@ class Client:
 
         return self._send_request("private", "GET", f"wallet/balances")
 
-    def get_private_wallet_single_balance(self, coin):
+    def get_balance(self, coin):
         """
         https://docs.ftx.com/#get-balances
 
@@ -375,7 +369,7 @@ class Client:
             return None
         return balance_coin[0]
 
-    def get_private_wallet_all_balances(self):
+    def get_all_balances(self):
         """
         https://docs.ftx.com/#get-balances-of-all-accounts
 
@@ -384,7 +378,7 @@ class Client:
 
         return self._send_request("private", "GET", f"wallet/all_balances")
 
-    def get_private_wallet_deposit_address(self, coin, chain):
+    def get_deposit_address(self, coin, chain):
         """
         https://docs.ftx.com/#get-deposit-address
 
@@ -400,7 +394,7 @@ class Client:
             {"method": chain},
         )
 
-    def get_private_wallet_deposit_history(
+    def get_deposit_history(
         self, limit=20, start_time=None, end_time=None
     ):
         """
@@ -428,7 +422,7 @@ class Client:
 
         return self._send_request("private", "GET", f"wallet/deposits", query)
 
-    def get_private_wallet_withdraw_history(
+    def get_withdrawal_history(
         self, limit=20, start_time=None, end_time=None
     ):
         """
@@ -456,7 +450,7 @@ class Client:
 
         return self._send_request("private", "GET", f"wallet/withdrawals", query)
 
-    def get_private_wallet_airdrops(self, limit=20, start_time=None, end_time=None):
+    def get_wallet_airdrops(self, limit=20, start_time=None, end_time=None):
         """
         https://docs.ftx.com/#get-airdrops
 
@@ -482,7 +476,7 @@ class Client:
 
         return self._send_request("private", "GET", f"wallet/airdrops", query)
 
-    def get_private_funding_payments(self, coin=None, start_time=None, end_time=None):
+    def get_funding_payments(self, coin=None, start_time=None, end_time=None):
         """
         https://docs.ftx.com/#funding-payments
 
@@ -513,7 +507,7 @@ class Client:
 
         return self._send_request("private", "GET", f"funding_payments", query)
 
-    def get_private_bills(
+    def get_bills(
         self, pair, limit=20, start_time=None, end_time=None, order=None, _orderId=None
     ):
         """
@@ -559,7 +553,7 @@ class Client:
 
         return self._send_request("private", "GET", f"fills", query)
 
-    def get_private_open_orders(self, pair=None):
+    def get_open_orders(self, pair=None):
         """
         https://docs.ftx.com/?python#get-open-orders
 
@@ -573,7 +567,7 @@ class Client:
 
         return self._send_request("private", "GET", f"orders", query)
 
-    def get_private_order_history(
+    def get_order_history(
         self, pair=None, start_time=None, end_time=None, limit=None
     ):
         """
@@ -614,7 +608,7 @@ class Client:
 
         return self._send_request("private", "GET", f"orders/history", query)
 
-    def get_private_open_trigger_orders(self, pair=None, _type=None):
+    def get_open_trigger_orders(self, pair=None, _type=None):
         """
         https://docs.ftx.com/?python#get-open-trigger-orders
 
@@ -637,7 +631,7 @@ class Client:
 
         return self._send_request("private", "GET", f"conditional_orders", query)
 
-    def get_private_trigger_order_triggers(self, _orderId):
+    def get_trigger_order_triggers(self, _orderId):
         """
         https://docs.ftx.com/?python#get-open-trigger-orders
 
@@ -649,7 +643,7 @@ class Client:
             "private", "GET", f"conditional_orders/{_orderId}/triggers"
         )
 
-    def get_private_trigger_order_history(
+    def get_trigger_order_history(
         self,
         pair=None,
         start_time=None,
@@ -723,7 +717,7 @@ class Client:
             "private", "GET", f"conditional_orders/history", query
         )
 
-    def get_private_order_status(self, orderId):
+    def get_order_status(self, orderId):
         """
         https://docs.ftx.com/#get-order-status
 
@@ -733,7 +727,7 @@ class Client:
 
         return self._send_request("private", "GET", f"orders/{orderId}")
 
-    def get_public_order_status_by_clientId(self, clientId):
+    def get_order_status_by_clientId(self, clientId):
         """
         https://docs.ftx.com/#get-order-status-by-client-id
 
@@ -744,7 +738,7 @@ class Client:
         return self._send_request("private", "GET", f"orders/by_client_id/{clientId}")
 
     # Private API (Write)
-    def set_private_create_subaccount(self, name):
+    def create_subaccount(self, name):
         """
         https://docs.ftx.com/?python#create-subaccount
 
@@ -754,7 +748,7 @@ class Client:
 
         return self._send_request("private", "POST", f"subaccounts", {"nickname": name})
 
-    def set_private_change_subaccount_name(self, name, newname):
+    def change_subaccount_name(self, name, newname):
         """
         https://docs.ftx.com/?python#change-subaccount-name
 
@@ -767,7 +761,7 @@ class Client:
 
         return self._send_request("private", "POST", f"subaccounts/update_name", query)
 
-    def set_private_delete_subaccount(self, name):
+    def delete_subaccount(self, name):
         """
         https://docs.ftx.com/?python#delete-subaccount
 
@@ -780,7 +774,7 @@ class Client:
         )
 
     # TODO: Endpoint Error > Not allowed with internal-transfers-disabled permissions
-    def set_private_transfer_balances(self, coin, size, source, destination):
+    def transfer_balances(self, coin, size, source, destination):
         """
         https://docs.ftx.com/?python#transfer-between-subaccounts
 
@@ -800,7 +794,7 @@ class Client:
 
         return self._send_request("private", "POST", f"subaccounts/transfer", query)
 
-    def set_private_change_account_leverage(self, leverage):
+    def change_account_leverage(self, leverage):
         """
         https://docs.ftx.com/?python#change-account-leverage
 
@@ -812,7 +806,7 @@ class Client:
             "private", "POST", f"account/leverage", {"leverage": leverage}
         )
 
-    def set_private_create_order(
+    def create_order(
         self,
         pair,
         side,
@@ -855,7 +849,7 @@ class Client:
 
         return self._send_request("private", "POST", f"orders", query)
 
-    def set_private_create_trigger_order(
+    def create_trigger_order(
         self,
         pair,
         side,
@@ -905,7 +899,7 @@ class Client:
         return self._send_request("private", "POST", f"conditional_orders", query)
 
     # TODO: Either price or size must be specified
-    def set_private_modify_order(self, orderId, price=None, size=None, clientId=None):
+    def modify_order(self, orderId, price=None, size=None, clientId=None):
         """
         https://docs.ftx.com/#modify-order
 
@@ -936,7 +930,7 @@ class Client:
         return self._send_request("private", "POST", f"orders/{orderId}/modify", query)
 
     # TODO: Either price or size must be specified
-    def set_private_modify_order_by_clientId(
+    def modify_order_by_clientId(
         self, clientOrderId, price=None, size=None, clientId=None
     ):
         """
@@ -970,7 +964,7 @@ class Client:
             "private", "POST", f"orders/by_client_id/{clientOrderId}/modify", query
         )
 
-    def set_private_modify_trigger_order(
+    def modify_trigger_order(
         self, orderId, _type, size, triggerPrice=None, orderPrice=None, trailValue=None
     ):
         """
@@ -1002,7 +996,7 @@ class Client:
             "private", "POST", f"conditional_orders/{orderId}/modify", query
         )
 
-    def set_private_cancel_order(self, orderId):
+    def cancel_order(self, orderId):
         """
         https://docs.ftx.com/#cancel-order
 
@@ -1012,7 +1006,7 @@ class Client:
 
         return self._send_request("private", "DELETE", f"orders/{orderId}")
 
-    def set_private_cancel_order_by_clientID(self, clientId):
+    def cancel_order_by_clientID(self, clientId):
         """
         https://docs.ftx.com/#cancel-order-by-client-id
 
@@ -1024,7 +1018,7 @@ class Client:
             "private", "DELETE", f"orders/by_client_id/{clientId}"
         )
 
-    def set_private_cancel_trigger_order(self, orderId):
+    def cancel_trigger_order(self, orderId):
         """
         https://docs.ftx.com/#cancel-open-trigger-order
 
@@ -1034,7 +1028,7 @@ class Client:
 
         return self._send_request("private", "DELETE", f"conditional_orders/{orderId}")
 
-    def set_private_cancel_all_order(
+    def cancel_all_orders(
         self, pair=None, conditionalOrdersOnly=False, limitOrdersOnly=False
     ):
         """
@@ -1061,7 +1055,7 @@ class Client:
 
     # SRM Stake
 
-    def get_private_srm_stake_history(self):
+    def get_srm_stake_history(self):
         """
         https://docs.ftx.com/#get-stakes
 
@@ -1070,7 +1064,7 @@ class Client:
 
         return self._send_request("private", "GET", f"srm_stakes/stakes")
 
-    def get_private_srm_unstake_history(self):
+    def get_srm_unstake_history(self):
         """
         https://docs.ftx.com/#unstake-request
 
@@ -1079,7 +1073,7 @@ class Client:
 
         return self._send_request("private", "GET", f"srm_stakes/unstake_requests")
 
-    def get_private_srm_stake_balances(self):
+    def get_srm_stake_balances(self):
         """
         https://docs.ftx.com/#get-stake-balances
 
@@ -1088,7 +1082,7 @@ class Client:
 
         return self._send_request("private", "GET", f"srm_stakes/balances")
 
-    def get_private_srm_stake_rewards_history(self):
+    def get_srm_stake_rewards_history(self):
         """
         https://docs.ftx.com/#get-staking-rewards
 
@@ -1097,7 +1091,7 @@ class Client:
 
         return self._send_request("private", "GET", f"srm_stakes/staking_rewards")
 
-    def set_private_srm_unstake(self, coin, size):
+    def srm_unstake(self, coin, size):
         """
         https://docs.ftx.com/#unstake-request-2
 
@@ -1112,7 +1106,7 @@ class Client:
             "private", "POST", f"srm_stakes/unstake_requests", query
         )
 
-    def set_private_cancel_srm_unstake(self, stakeId):
+    def cancel_srm_unstake(self, stakeId):
         """
         https://docs.ftx.com/#cancel-unstake-request
 
@@ -1124,7 +1118,7 @@ class Client:
             "private", "DELETE", f"srm_stakes/unstake_requests/{stakeId}"
         )
 
-    def set_private_srm_stake(self, coin, size):
+    def srm_stake(self, coin, size):
         """
         https://docs.ftx.com/#stake-request
 
@@ -1137,7 +1131,7 @@ class Client:
 
         return self._send_request("private", "POST", f"srm_stakes/stakes", query)
 
-    def get_private_margin_lending_rates(self):
+    def get_margin_lending_rates(self):
         """
         https://docs.ftx.com/#get-lending-rates
         :return a list contains lending rates (include estimate rates and previous rates)
@@ -1145,7 +1139,7 @@ class Client:
 
         return self._send_request("private", "GET", f"spot_margin/lending_rates")
 
-    def set_private_margin_lending_offer(self, coin, size, rate):
+    def set_margin_lending_offer(self, coin, size, rate):
         """
         https://docs.ftx.com/#submit-lending-offer
         :param coin: the lending coin to query
