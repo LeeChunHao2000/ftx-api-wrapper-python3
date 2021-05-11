@@ -161,7 +161,9 @@ class Client:
         :param end_time: the target period before an Epoch time in seconds
         :return: a list contains all completed orders in exchange
         """
-        query = helpers.build_query(limit=limit, start_time=start_time, end_time=end_time)
+        query = helpers.build_query(
+            limit=limit, start_time=start_time, end_time=end_time
+        )
 
         return self._send_request("public", "GET", f"markets/{pair}/trades", query)
 
@@ -190,10 +192,9 @@ class Client:
 
         query = {"resolution": resolution}
 
-        query = helpers.build_query(query, 
-                    limit=limit,
-                    start_time=start_time,
-                    end_time=end_time)
+        query = helpers.build_query(
+            query, limit=limit, start_time=start_time, end_time=end_time
+        )
 
         return self._send_request("public", "GET", f"markets/{pair}/candles", query)
 
