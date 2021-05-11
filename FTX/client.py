@@ -161,24 +161,7 @@ class Client:
         :param end_time: the target period before an Epoch time in seconds
         :return: a list contains all completed orders in exchange
         """
-        query = {}
-
-        if limit is not None:
-            query.update(
-                {
-                    "limit": limit,
-                }
-            )
-
-        if start_time is not None:
-            query.update(
-                {
-                    "start_time": start_time,
-                }
-            )
-
-        if end_time is not None:
-            query.update({"end_time": end_time})
+        query = helpers.build_query(limit=limit, start_time=start_time, end_time=end_time)
 
         return self._send_request("public", "GET", f"markets/{pair}/trades", query)
 
@@ -205,26 +188,12 @@ class Client:
                 f"resolution must be in {', '.join(constants.VALID_K_LINE_RESOLUTIONS)}"
             )
 
-        query = {
-            "resolution": resolution,
-        }
+        query = {"resolution": resolution}
 
-        if limit is not None:
-            query.update(
-                {
-                    "limit": limit,
-                }
-            )
-
-        if start_time is not None:
-            query.update(
-                {
-                    "start_time": start_time,
-                }
-            )
-
-        if end_time is not None:
-            query.update({"end_time": end_time})
+        query = helpers.build_query(query, 
+                    limit=limit,
+                    start_time=start_time,
+                    end_time=end_time)
 
         return self._send_request("public", "GET", f"markets/{pair}/candles", query)
 
