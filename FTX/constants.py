@@ -1,5 +1,5 @@
-PUBLIC_API_URL = 'https://ftx.com/api'
-PRIVATE_API_URL = 'https://ftx.com/api'
+PUBLIC_API_URL = "https://ftx.com/api"
+PRIVATE_API_URL = "https://ftx.com/api"
 DEFAULT_LIMIT = None
 DEFAULT_K_LINE_RESOLUTION = 14_400
 VALID_K_LINE_RESOLUTIONS = (15, 60, 300, 900, 3600, 14400, 86400)
