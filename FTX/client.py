@@ -28,11 +28,11 @@ class DoesntExist(Exception):
     pass
 
 
-class Client(object):
+class Client:
     def __init__(self, key, secret, subaccount=None, timeout=30):
         self._api_key = key
         self._api_secret = secret
-        self._api_subacc = subaccount
+        self._api_subaccount = subaccount
         self._api_timeout = int(timeout)
 
     def _build_headers(self, scope, method, endpoint, query=None):
@@ -64,10 +64,10 @@ class Client(object):
                 'FTX-TS': nonce
             })
 
-            if self._api_subacc:
+            if self._api_subaccount:
                 headers.update({
                     # If you want to access a subaccount
-                    'FTX-SUBACCOUNT': urllib.parse.quote(self._api_subacc)
+                    'FTX-SUBACCOUNT': urllib.parse.quote(self._api_subaccount)
                 })
 
         return headers
