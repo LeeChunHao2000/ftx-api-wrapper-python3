@@ -1,10 +1,13 @@
+import datetime as dt
 import hashlib
 import hmac
 import json
+from time import sleep
 from typing import List, NewType, Optional, Dict, Union
 import urllib
 from urllib.parse import urlencode
 
+from expiringdict import ExpiringDict
 import requests
 
 from . import constants
@@ -30,6 +33,10 @@ class DoesntExist(Exception):
 
 
 class Client:
+    _requests = ExpiringDict(
+        max_len=constants.RATE_LIMIT_PER_SECOND, max_age_seconds=60
+    )
+
     def __init__(
         self, key: str, secret: str, subaccount: Optional[str] = None, timeout: int = 30
     ):
@@ -91,6 +98,14 @@ class Client:
             return url
 
     def _send_request(self, method: str, endpoint: str, query: Optional[dict] = None):
+        # .values() because of a bug in len(ExpiringDict)
+        if len(self._requests.values()) == constants.RATE_LIMIT_PER_SECOND:
+            print(
+                "waiting half a second because there have been "
+                f"{constants.RATE_LIMIT_PER_SECOND} requests in the past second.\n"
+                f"{method}: '{endpoint}' query='{query}'"
+            )
+            sleep(.5)
         query = query or {}
 
         scope = "public"
@@ -112,6 +127,9 @@ class Client:
                 response = requests.delete(url, headers=headers, json=query).json()
         except Exception as e:
             print("[x] Error: {}".format(e.args[0]))
+        finally:
+            # increment the number of requests in the past second
+            self._requests[dt.datetime.now()] = None
 
         if "result" in response:
             return response["result"]
@@ -222,9 +240,7 @@ class Client:
 
         :return: a list contains all available perpetual futures
         """
-        return [
-            future for future in self.get_futures() if future["perpetual"]
-        ]
+        return [future for future in self.get_futures() if future["perpetual"]]
 
     def get_future(self, pair: str) -> dict:
         """
