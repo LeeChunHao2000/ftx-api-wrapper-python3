@@ -223,7 +223,7 @@ class Client:
         :return: a list contains all available perpetual futures
         """
         return [
-            future for future in self.get_public_all_futures() if future["perpetual"]
+            future for future in self.get_futures() if future["perpetual"]
         ]
 
     def get_future(self, pair: str) -> dict:
