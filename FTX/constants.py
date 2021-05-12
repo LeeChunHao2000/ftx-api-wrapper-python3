@@ -16,3 +16,4 @@ PRIVATE_ENDPOINTS = (
     "fills",
     "funding_payments",
 )
+VALID_CHAINS = ("omni", "erc20", "trx", "sol", "bep2")
