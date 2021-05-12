@@ -29,16 +29,13 @@ class DoesntExist(Exception):
 
 
 class Client:
-    def __init__(self, key, secret, subaccount=None, timeout=30):
+    def __init__(self, key: str, secret: str, subaccount: Optional[str] = None, timeout: int = 30):
         self._api_key = key
         self._api_secret = secret
         self._api_subaccount = subaccount
-        self._api_timeout = int(timeout)
+        self._api_timeout = timeout
 
-    def _build_headers(self, scope, method, endpoint, query=None):
-        if query is None:
-            query = {}
-
+    def _build_headers(self, scope: str, method: str, endpoint: str, query: dict):
         endpoint = "/api/" + endpoint
 
         headers = {
@@ -79,10 +76,7 @@ class Client:
 
         return headers
 
-    def _build_url(self, scope, method, endpoint, query=None):
-        if query is None:
-            query = {}
-
+    def _build_url(self, scope: str, method: str, endpoint: str, query: dict):
         if scope.lower() == "private":
             url = f"{constants.PRIVATE_API_URL}/{endpoint}"
         else:
@@ -93,7 +87,7 @@ class Client:
         else:
             return url
 
-    def _send_request(self, method, endpoint, query=None):
+    def _send_request(self, method: str, endpoint: str, query: Optional[dict] = None):
         query = query or {}
 
         scope = "public"
@@ -225,7 +219,7 @@ class Client:
             future for future in self.get_public_all_futures() if future["perpetual"]
         ]
 
-    def get_future(self, pair):
+    def get_future(self, pair) -> dict:
         """
         https://docs.ftx.com/#get-future
 
@@ -245,7 +239,7 @@ class Client:
 
         return self._GET(f"futures/{pair.upper()}/stats")
 
-    def get_funding_rates(self):
+    def get_funding_rates(self) -> ListOfDicts:
         """
         https://docs.ftx.com/#get-funding-rates
 
@@ -755,7 +749,7 @@ class Client:
         return self._POST(f"conditional_orders", query)
 
     # TODO: Either price or size must be specified
-    def modify_order(self, orderId, price=None, size=None, clientId=None):
+    def modify_order(self, orderId: str, price: Optional[float] = None, size=None, clientId=None):
         """
         https://docs.ftx.com/#modify-order
 
